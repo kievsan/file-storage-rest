@@ -1,0 +1,14 @@
+databaseChangeLog:
+#  - include:
+#      file: migrations/001-init_user.sql
+#      relativeToChangelogFile: true
+#  - include:
+#      file: migrations/002-init.sql
+#      relativeToChangelogFile: true
+
+#  - changeSet:
+#      id: 00001
+#      author: kievsan
+#      context: dev
+#      changes:
+#        -
