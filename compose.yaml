@@ -1,0 +1,34 @@
+version: '1.0'
+
+volumes:
+  file_storage_data:
+
+networks:
+  dev_backend:
+
+services:
+  database:
+    image: 'postgres:latest'
+    container_name: postgres_file_storage
+    environment:
+      POSTGRES_DB: 'file_storage'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+    ports:
+      - '5438:5432'
+    volumes:
+      - file_storage_data:/var/lib/postgresql/data
+    networks:
+      - dev_backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 256M
