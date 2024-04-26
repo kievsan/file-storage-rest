@@ -4,7 +4,7 @@
 
 ###
 
-# Аутентификация предустановленного суперадмина 'tarter':
+# Аутентификация предустановленного суперадмина 'starter':
 # токен:   eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MDYwMzAyLCJleHAiOjE3MTQxNDY3MDJ9.Ssy2eMd_Xsrrj5zSI-plB21MOXd6EhKzTIw0xrBhWUS9VvJcd4IisPgbXHs4QYgX
 POST {{baseUrl}}/login
 Content-Type: application/json
@@ -43,14 +43,14 @@ Content-Type: application/json
 
 # Выход из учетной записи
 POST {{baseUrl}}/logout
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MDYwOTg0LCJleHAiOjE3MTQxNDczODR9.TkHUSLzEa75OUpjT_yGhW-dYaJCbE4WnnF8dFXCUz63L0a2hq5SRTqWwhk3JT7mc
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTI0MjUyLCJleHAiOjE3MTQxMjQ4NTJ9.fsf3z5ENVx9oxyQD9AaSGWUiwGMZYI3sNRmQLt12T27lhMeLeMLEfFo7jzuBKxgw
 Content-Type: : application/json
 
 ###
 
 # Регистрация учетной записи
 POST {{baseUrl}}/user/reg
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MDE1MDc0LCJleHAiOjE3MTQxMDE0NzR9.Gjuvj6sYO74_MS1uPXoXrPoMs-iPdFFEcJgPtU1YTpQwVHCE8XW3Cl15m4Ehp2DH
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTQ4OTQyLCJleHAiOjE3MTQxNDk1NDJ9.mY3EmNVUHZx3rbbNByj7SSvDzWtHerEBG_C32HDJd2-eFQSxnPju09Pf3afxzpje
 Content-Type: application/json
 
 {

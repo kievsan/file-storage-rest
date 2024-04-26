@@ -37,7 +37,7 @@ public class SecurityConfig {
         // Enable CORS and disable CSRF:
         http.cors(withDefaults()).csrf(AbstractHttpConfigurer::disable);
         // Set session management to stateless:
-        http.sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.sessionManagement(cfg -> cfg.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         // Set permissions on endpoints:
         http
@@ -60,13 +60,14 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/api/v1/login?logout")
 //                        .logoutUrl("/api/v1/logout").permitAll()
 //                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/v1/logout")).permitAll()
-                )
-        ;
+                );
         http
                 .httpBasic(withDefaults())
                 .authenticationProvider(authProvider)
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
-        ;
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authEntryPoint)
+                        .accessDeniedPage("/api/v1/login")
+                );
         return http.build();
     }
 }

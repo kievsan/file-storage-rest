@@ -10,7 +10,7 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignUpResponse implements AuthResponse { // Ответ: новый user
+public class SignUpResponse { // Ответ: новый user
 
     private Long id;
     private String nickname;

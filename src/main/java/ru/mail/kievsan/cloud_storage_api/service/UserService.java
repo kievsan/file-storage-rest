@@ -2,11 +2,11 @@ package ru.mail.kievsan.cloud_storage_api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.mail.kievsan.cloud_storage_api.exception.UserRegisterUserInUseException;
+import ru.mail.kievsan.cloud_storage_api.exception.UserSignupIncompleteTransactionException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
@@ -14,7 +14,6 @@ import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Service
@@ -25,16 +24,9 @@ public class UserService {
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
     private final JwtProvider provider;
-
-    Function<User, SignUpResponse> OK_RESPONSE = user-> SignUpResponse.builder()
-            .id(user.getId())
-            .nickname(user.getNickname())
-            .role(user.getRole())
-            .build();
-    Function<String, AuthResponse> BAD_RESPONSE = msg-> AuthErrResponse.builder().message(msg).id(0).build();
 //
     @Transactional
-    public ResponseEntity<AuthResponse> register(String token, SignUpRequest request) {
+    public SignUpResponse register(String token, SignUpRequest request) throws UserRegisterUserInUseException {
         Predicate<User> USER_IS_ADMIN = user-> !(user == null || token.isEmpty())
                 && provider.isTokenValid(token, user) && user.isAccountNonLocked()
                 && user.getRole() == Role.ADMIN;
@@ -43,9 +35,7 @@ public class UserService {
 
         User owner = token.isEmpty() ? null : userRepo.findByEmail(provider.extractUsername(token)).orElse(null);
 
-        ResponseEntity<AuthResponse> response;
         String msg = String.format("User '%s'", request.getEmail());
-        String errMsg = "was not signup";
 
         var newUser = User.builder()
                 .nickname(request.getNickname())
@@ -54,16 +44,23 @@ public class UserService {
                 .role(USER_IS_SUPER_ADMIN.test(owner) ? request.getRole() : Role.USER)
                 .enabled(true)
                 .build();
+        if (userRepo.existsByEmail(newUser.getUsername())) {
+            throw new UserRegisterUserInUseException("Username is already in use");
+        }
+        signup(newUser, msg);
+        return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getRole());
+    }
+//
+    public void signup(User newUser, String msg) throws UserSignupIncompleteTransactionException {
         try {
             userRepo.save(newUser);
             var user = userRepo.findByEmail(newUser.getEmail()).orElseThrow();
-            msg += String.format("(%s) signup. Id=%s", user.getNickname(), user.getId());
-            response = ResponseEntity.ok(OK_RESPONSE.apply(newUser));
+            msg += String.format("(%s) signup: Id=%s", user.getNickname(), user.getId());
         } catch (RuntimeException ex) {
-            msg += String.format(" %s: %s", errMsg, ex.getMessage());
-            response = new ResponseEntity<>(BAD_RESPONSE.apply(msg), HttpStatus.BAD_REQUEST);
+            msg += String.format(" was not signup: %s", ex.getMessage());
+            log.info(msg);
+            throw new UserSignupIncompleteTransactionException(msg);
         }
         log.info(msg);
-        return response;
     }
 }

@@ -23,21 +23,14 @@ public class AuthController {
     @PostMapping("/login")
     @PermitAll
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        return authService.authenticate(request);
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 
     @PostMapping ("/logout")
     @PermitAll
     public ResponseEntity<String> logout(@RequestHeader("auth-token") String authToken,
-            HttpServletRequest request, HttpServletResponse response) {
-        return authService.logout(authToken, request, response);
-    }
-
-    @GetMapping ("/logout")
-    @PermitAll
-    public ResponseEntity<String> logout2(@RequestHeader("auth-token") String authToken,
-            HttpServletRequest request, HttpServletResponse response) {
-        return authService.logout(authToken, request, response);
+                                         HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(authService.logout(authToken, request, response));
     }
 
 }

@@ -7,28 +7,20 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
+import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 
 @Configuration
 @RequiredArgsConstructor
 public class AuthConfig {
 
-    private final UserJPARepo repo;
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> repo.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
+    private final JWTUserDetails jwtUserDetails;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setUserDetailsService(jwtUserDetails);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
