@@ -3,6 +3,7 @@ package ru.mail.kievsan.cloud_storage_api.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.mail.kievsan.cloud_storage_api.exception.FileListUserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.exception.HttpStatusException;
@@ -24,6 +25,7 @@ public class FileListService {
     private JWTUserDetails jwtUserDetails;
 
     public List<FileListResponse> getFileList(String authToken, Integer limit) throws RuntimeException {
+        log.info("  Start File list service:  limit = {},  token:  {}", limit, authToken);
         try {
             final User user = jwtUserDetails.loadUserByJWT(authToken);
             log.info("Success get all files. User {}", user.getUsername());
@@ -35,7 +37,7 @@ public class FileListService {
                     .collect(Collectors.toList());
         } catch (HttpStatusException ex) {
             String msg = String.format("Get file list error:  %s", ex);
-            log.info(msg);
+//            log.info(msg);
             throw new FileListUserNotFoundException(msg);
         }
     }

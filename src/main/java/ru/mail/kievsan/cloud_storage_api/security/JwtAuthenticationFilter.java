@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -26,11 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        final String jwt = provider.resolveToken(request, "auth-token");
+//        final String jwt = provider.resolveToken(request, "auth-token");
+        final String jwt = request.getHeader("auth-token");
+        log.info("  Start JwtAuthenticationFilter.doFilterInternal() :  token  {}", jwt);
         if(jwt != null ) {
             try {
                 final String username = provider.extractUsername(jwt);
-                if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if(username != null) {
                     UserDetails userDetails = jwtUserDetails.loadUserByUsername(username);
                     if(provider.isTokenValid(jwt, userDetails)) {
                         var authToken = provider.getAuthentication(jwt);

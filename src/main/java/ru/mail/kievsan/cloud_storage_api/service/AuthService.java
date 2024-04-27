@@ -33,8 +33,7 @@ public class AuthService {
         try {
             var user = userDetails.loadUserByUsername(request.getLogin());
             Authentication auth = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(auth);
 
             var jwtToken = provider.generateToken(user);

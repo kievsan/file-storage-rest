@@ -3,10 +3,12 @@ package ru.mail.kievsan.cloud_storage_api.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,11 +24,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class JwtProvider {
 
-    private static final String SECRET_KEY = "6A576D5A7134743777217A25432A462D4A614E645267556B5870327235753878";
+    private static final String SECRET_KEY = "5wpkzuGthhtkToSjB/s/6ulZJeV2hYKbPyz9C0WFRIDiYtrOJvvPFb3UeZimcWV/";
 
     private final UserJPARepo userRepo;
 
@@ -61,7 +64,7 @@ public class JwtProvider {
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -97,14 +100,18 @@ public class JwtProvider {
         }
     }
 
-    public boolean isTokenValid(String token) {
+    public boolean isTokenValid(String token) throws RuntimeException {
         try {
             Jwts.parser()
                     .verifyWith((SecretKey) getSigningKey()).build()
                     .parseSignedClaims(token);
             return !isTokenExpired(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new HttpStatusException("Expired or invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
+//        } catch (JwtException | IllegalArgumentException e) {
+//            throw new HttpStatusException("Expired or invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (JwtException e) {
+            throw new HttpStatusException("Invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
+            throw new HttpStatusException("Expired JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

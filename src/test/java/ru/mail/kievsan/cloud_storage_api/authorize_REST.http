@@ -5,7 +5,7 @@
 ###
 
 # Аутентификация предустановленного суперадмина 'starter':
-# токен:   eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MDYwMzAyLCJleHAiOjE3MTQxNDY3MDJ9.Ssy2eMd_Xsrrj5zSI-plB21MOXd6EhKzTIw0xrBhWUS9VvJcd4IisPgbXHs4QYgX
+# токен:   eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTk4ODc2LCJleHAiOjE3MTQxOTkxNzZ9.iGjaVY9N0wXL3lCelOK3dNw9MxBbNPcxPYZ9HSckTI-aWdbjfmihaDA0KQ6UdEv2
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -50,7 +50,7 @@ Content-Type: : application/json
 
 # Регистрация учетной записи
 POST {{baseUrl}}/user/reg
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTQ4OTQyLCJleHAiOjE3MTQxNDk1NDJ9.mY3EmNVUHZx3rbbNByj7SSvDzWtHerEBG_C32HDJd2-eFQSxnPju09Pf3afxzpje
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDE5Njc5MiwiZXhwIjoxNzE0MTk3MDkyfQ.go7VPGpXq6M2bEVw-gtlHYW-E94Sevq__kjqWEH_ft7KmTos3sX3owUavPisQWte
 Content-Type: application/json
 
 {
