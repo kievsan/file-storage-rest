@@ -26,8 +26,8 @@ public class FileStorageService {
         try {
             fileRepo.save(new File(filename, LocalDateTime.now(),
                     file == null ? 0 : file.getSize(),
-//                    Objects.requireNonNull(file).getBytes(),
-                    file == null ? Decoders.BASE64.decode("FileExample.") : file.getBytes(), // SUCCESS!
+                    Objects.requireNonNull(file).getBytes(),
+//                    file == null ? Decoders.BASE64.decode("FileExample.") : file.getBytes(), // SUCCESS!
                     user));
             log.info("[User {}] Success upload file '{}'. ", user.getUsername(), filename);
         } catch (IOException | NullPointerException e) {

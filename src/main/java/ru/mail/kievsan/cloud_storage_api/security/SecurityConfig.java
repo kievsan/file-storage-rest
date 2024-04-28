@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // public endpoints:
                         .requestMatchers(HttpMethod.POST,
-                                "/api/v1/user/reg", "/api/v1/login", "/api/v1/logout", "/api/v1/file")
+                                "/api/v1/user/reg", "/api/v1/login", "/api/v1/logout")
                         .permitAll()
                         // private endpoints:
                         .anyRequest().authenticated()
