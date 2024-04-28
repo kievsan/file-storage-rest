@@ -1,10 +1,9 @@
 package ru.mail.kievsan.cloud_storage_api.service;
 
-import com.fasterxml.jackson.databind.util.ArrayBuilders;
 import io.jsonwebtoken.io.Decoders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.buf.ByteChunk;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
@@ -12,9 +11,7 @@ import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
 
-import javax.print.DocFlavor;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -27,11 +24,10 @@ public class FileStorageService {
 
     public void uploadFile(String filename, MultipartFile file, User user) {
         try {
-
             fileRepo.save(new File(filename, LocalDateTime.now(),
                     file == null ? 0 : file.getSize(),
-                    Objects.requireNonNull(file).getBytes(),
-                    //file == null ? Decoders.BASE64.decode("FileExample.") : file.getBytes(), // SUCCESS!
+//                    Objects.requireNonNull(file).getBytes(),
+                    file == null ? Decoders.BASE64.decode("FileExample.") : file.getBytes(), // SUCCESS!
                     user));
             log.info("[User {}] Success upload file '{}'. ", user.getUsername(), filename);
         } catch (IOException | NullPointerException e) {

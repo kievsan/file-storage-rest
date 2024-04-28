@@ -6,7 +6,7 @@
 
 # Получение списка файлов:
 POST {{baseUrl}}/file?filename=example1.txt
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MjcwMTE0LCJleHAiOjE3MTQyNzA3MTR9.8JoOj_aARyoW-gT37_Op5qExT7jia8ql8x8TTICChiVSYAa6YYaQeX_2pm3vjBEt
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MjkwMTI4LCJleHAiOjE3MTQyOTE5Mjh9.csCooBaXGYfWltK8ose3yNRUo2_ZiiLxs5kB0k8RwgtDSDkt_VTZ_QYugQK1RDXo
 Content-Type: multipart/form-data
 
 ###
