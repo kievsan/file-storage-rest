@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
@@ -39,6 +40,7 @@ public class FileStorageService {
         }
     }
 
+    @Transactional
     public void editFileName(String filename, String newFileName, User user) {
         fileRepo.editFileNameByUser(user, filename, newFileName);
         final File file = fileRepo.findByUserAndFilename(user, filename);

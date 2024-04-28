@@ -36,8 +36,8 @@ public class FileStorageController {
     public ResponseEntity<?> editFileName(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename,
                                           @RequestBody EditFileNameRequest request) {
-        starter.startLog(String.format("%s, edit file name '%s' -> '%s'", header, filename, request.getFilename()));
-        service.editFileName(filename, request.getFilename(), starter.validate(authToken, "Edit file name error"));
+        starter.startLog(String.format("%s, edit file name '%s' -> '%s'", header, filename, request.getName()));
+        service.editFileName(filename, request.getName(), starter.validate(authToken, "Edit file name error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

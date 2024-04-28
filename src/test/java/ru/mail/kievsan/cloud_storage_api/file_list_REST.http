@@ -6,7 +6,7 @@
 
 # Получение списка файлов:
 GET {{baseUrl}}?limit=0
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MjkyNjE2LCJleHAiOjE3MTQyOTQ0MTZ9.D-_7oOKv1elJ5vRcBowngHYAflLPXxwd9aXgm_xwPseqjnCd0KZx_f37PlNCuecy
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MzAyMjIxLCJleHAiOjE3MTQzMDQwMjF9.b8IU1A3Rdd6Y5owbIIV8N7lqMqBnaQwnAMKCuzxZlRDUQL4RbJv2_AV1Su4Le4zN
 Content-Type: application/json
 
 ###
