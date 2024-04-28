@@ -64,32 +64,32 @@ public class JwtProvider {
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String resolveToken(HttpServletRequest request) {
-        return resolveToken(request, tokenHeaderName, tokenPrefix);
-    }
-
-    public String resolveToken(HttpServletRequest request, String tokenHeaderName) {
-        return resolveToken(request, tokenHeaderName, tokenPrefix);
-    }
-
-    public String resolveToken(HttpServletRequest request, String tokenHeaderName, String startsWith) {
-        String token = request.getHeader(tokenHeaderName.isEmpty() ? this.tokenHeaderName : tokenHeaderName);
-        return resolveToken(token, startsWith);
-    }
-
-    public String resolveToken(String token, String startsWith) {
-        return token != null && token.startsWith(startsWith) && token.length() > startsWith.length()
-                ? token.replace(startsWith, "") : null;
-    }
-
-    public String resolveToken(String token) {
-        return resolveToken(token, tokenPrefix);
-    }
+//    public String resolveToken(HttpServletRequest request) {
+//        return resolveToken(request, tokenHeaderName, tokenPrefix);
+//    }
+//
+//    public String resolveToken(HttpServletRequest request, String tokenHeaderName) {
+//        return resolveToken(request, tokenHeaderName, tokenPrefix);
+//    }
+//
+//    public String resolveToken(HttpServletRequest request, String tokenHeaderName, String startsWith) {
+//        String token = request.getHeader(tokenHeaderName.isEmpty() ? this.tokenHeaderName : tokenHeaderName);
+//        return resolveToken(token, startsWith);
+//    }
+//
+//    public String resolveToken(String token, String startsWith) {
+//        return token != null && token.startsWith(startsWith) && token.length() > startsWith.length()
+//                ? token.replace(startsWith, "") : null;
+//    }
+//
+//    public String resolveToken(String token) {
+//        return resolveToken(token, tokenPrefix);
+//    }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
@@ -106,8 +106,6 @@ public class JwtProvider {
                     .verifyWith((SecretKey) getSigningKey()).build()
                     .parseSignedClaims(token);
             return !isTokenExpired(token);
-//        } catch (JwtException | IllegalArgumentException e) {
-//            throw new HttpStatusException("Expired or invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (JwtException e) {
             throw new HttpStatusException("Invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (IllegalArgumentException e) {

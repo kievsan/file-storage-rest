@@ -1,0 +1,12 @@
+# примеры API-запросов
+
+ @baseUrl = http://localhost:5060/api/v1/list
+
+###
+
+# Получение списка файлов:
+POST {{baseUrl}}/file?filename=example1.txt
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MjcwMTE0LCJleHAiOjE3MTQyNzA3MTR9.8JoOj_aARyoW-gT37_Op5qExT7jia8ql8x8TTICChiVSYAa6YYaQeX_2pm3vjBEt
+Content-Type: multipart/form-data
+
+###

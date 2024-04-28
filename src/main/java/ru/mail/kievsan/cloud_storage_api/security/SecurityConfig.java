@@ -46,8 +46,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/user/reg", "/api/v1/login", "/api/v1/logout")
                         .permitAll()
-                        // public endpoints:
-//                        .requestMatchers(HttpMethod.GET, "/api/v1/list").permitAll()
                         // private endpoints:
                         .anyRequest().authenticated()
                 );

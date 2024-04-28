@@ -2,6 +2,7 @@ package ru.mail.kievsan.cloud_storage_api.service;
 
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,27 +18,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class FileListService {
 
-    private FileJPARepo fileRepo;
-    private JWTUserDetails jwtUserDetails;
+    private final FileJPARepo fileRepo;
 
-    public List<FileListResponse> getFileList(String authToken, Integer limit) throws RuntimeException {
-        log.info("  Start File list service:  limit = {},  token:  {}", limit, authToken);
+    public List<FileListResponse> getFileList(Integer limit, User user) throws RuntimeException {
+        log.info("  Start File list service, get file list with limit = {},  user:  {} ({}), {}",
+                limit, user.getUsername(), user.getNickname(), user.getAuthorities());
         try {
-            final User user = jwtUserDetails.loadUserByJWT(authToken);
-            log.info("Success get all files. User {}", user.getUsername());
-
             var fileStream = fileRepo.findAllByUserOrderByFilename(user).stream();
             var limitStream = limit > 0 ? fileStream.limit(limit) : fileStream;
 
+            log.info("Success get file list. User {} ({})", user.getUsername(), user.getNickname());
+
             return limitStream.map(file -> new FileListResponse(file.getFilename(), file.getSize()))
                     .collect(Collectors.toList());
-        } catch (HttpStatusException ex) {
+        } catch (RuntimeException ex) {
             String msg = String.format("Get file list error:  %s", ex);
-//            log.info(msg);
+            log.error("[FILE LIST controller error] {}", msg);
             throw new FileListUserNotFoundException(msg);
         }
     }
