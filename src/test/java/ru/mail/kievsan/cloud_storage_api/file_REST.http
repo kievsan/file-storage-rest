@@ -6,11 +6,17 @@
 
 # Переименование файла:
 PUT {{baseUrl}}?filename=example1.txt
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MzAyMjIxLCJleHAiOjE3MTQzMDQwMjF9.b8IU1A3Rdd6Y5owbIIV8N7lqMqBnaQwnAMKCuzxZlRDUQL4RbJv2_AV1Su4Le4zN
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MzU4MTEwLCJleHAiOjE3MTQzNTk5MTB9.ZWEjMN-SUKNTu2bxCUBpDbQUTGzWE9vVELXnQAeT3if64wFd0a8EB1iXvERh9GtC
 Content-Type: application/json
 
 {
   "name": "example2.txt"
 }
+
+###
+
+# Удаление файла:
+DELETE {{baseUrl}}?filename=example2.txt
+auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MzU4MTEwLCJleHAiOjE3MTQzNTk5MTB9.ZWEjMN-SUKNTu2bxCUBpDbQUTGzWE9vVELXnQAeT3if64wFd0a8EB1iXvERh9GtC
 
 ###

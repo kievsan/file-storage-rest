@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
+import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
 
@@ -28,5 +29,10 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UnauthorizedUserException.class)
     public ResponseEntity<ErrResponse> handlerUnauthorizedUser(UnauthorizedUserException ex) {
         return new ResponseEntity<>(errResp(ex, 401), HttpStatusCode.valueOf(401));
+    }
+
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<ErrResponse> handlerServerErr(InternalServerException ex) {
+        return new ResponseEntity<>(errResp(ex, 500), HttpStatusCode.valueOf(500));
     }
 }
