@@ -12,22 +12,23 @@ import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ControllerStarter {
+public class AuthTokenValidator {
 
     private final JWTUserDetails userDetails;
 
-    public void startLog(String msg) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info(" {}:  user  {}, {}", msg, auth.getName(), auth.getAuthorities());
-    }
-
-    public User validate(String token, String errMsg) {
+    public User validateJWT(String jwt, String logMsg, String errMsg) {
+        log(logMsg);
         try {
-            return userDetails.loadUserByJWT(token);
+            return userDetails.loadUserByJWT(jwt);
         } catch (HttpStatusException ex) {
             String msg = String.format("%s:  user unauthorized.  %s", errMsg, ex);
             log.error(msg);
             throw new UnauthorizedUserException(msg);
         }
+    }
+
+    public void log(String msg) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info(" {}:  user  {}, {}", msg, auth.getName(), auth.getAuthorities());
     }
 }

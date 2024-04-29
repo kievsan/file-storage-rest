@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file.EditFileNameRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
-import ru.mail.kievsan.cloud_storage_api.util.ControllerStarter;
+import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
 
 @CrossOrigin(
         origins = "${origins.clients}",
@@ -22,7 +22,7 @@ import ru.mail.kievsan.cloud_storage_api.util.ControllerStarter;
 public class FileStorageController {
 
     private final FileStorageService service;
-    private final ControllerStarter starter;
+    private final AuthTokenValidator validator;
 
     private final String header = "Start File controller";
 
@@ -30,8 +30,9 @@ public class FileStorageController {
     public ResponseEntity<?> uploadFile(@RequestHeader("auth-token") String authToken,
                                         @RequestParam("filename") String filename,
                                         @RequestBody MultipartFile file) {
-        starter.startLog(String.format("%s, upload file '%s'", header, filename));
-        service.uploadFile(filename, file, starter.validate(authToken, "Upload file error"));
+        service.uploadFile(filename, file, validator.validateJWT(authToken,
+                String.format("%s, upload file '%s'", header, filename),
+                "Upload file error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -39,24 +40,27 @@ public class FileStorageController {
     public ResponseEntity<?> editFileName(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename,
                                           @RequestBody EditFileNameRequest request) {
-        starter.startLog(String.format("%s, edit file name '%s' -> '%s'", header, filename, request.getName()));
-        service.editFileName(filename, request.getName(), starter.validate(authToken, "Edit file name error"));
+        service.editFileName(filename, request.getName(), validator.validateJWT(authToken,
+                String.format("%s, edit file name '%s' -> '%s'", header, filename, request.getName()),
+                "Edit file name error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @DeleteMapping()
     public ResponseEntity<?> deleteFileName(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename) {
-        starter.startLog(String.format("%s, delete file '%s'", header, filename));
-        service.deleteFile(filename, starter.validate(authToken, "Delete file error"));
+        service.deleteFile(filename, validator.validateJWT(authToken,
+                String.format("%s, delete file '%s'", header, filename),
+                "Delete file error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @GetMapping(produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> downloadFile(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename) {
-        starter.startLog(String.format("----------download resource----------\n %s, download file '%s'", header, filename));
-        File file = service.downloadFile(filename, starter.validate(authToken, "Download file error"));
+        File file = service.downloadFile(filename, validator.validateJWT(authToken,
+                String.format("----------download resource----------\n %s, download file '%s'", header, filename),
+                "Download file error"));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(file.getContent());
