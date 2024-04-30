@@ -1,21 +1,13 @@
 package ru.mail.kievsan.cloud_storage_api.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.mail.kievsan.cloud_storage_api.exception.HttpStatusException;
-import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
+import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -31,23 +23,11 @@ public class JwtProvider {
 
     private static final String SECRET_KEY = "5wpkzuGthhtkToSjB/s/6ulZJeV2hYKbPyz9C0WFRIDiYtrOJvvPFb3UeZimcWV/";
 
-    private final UserJPARepo userRepo;
-
-    private final String tokenHeaderName = "Authorization";
-    private final String tokenPrefix = "Bearer ";
-
-    public UsernamePasswordAuthenticationToken getAuthentication(String token) {
-        String username = extractUsername(token);
-        UserDetails userDetails = userRepo.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
-
-    public String extractUsername(String token) {
+    public String extractUsername(String token) throws UnauthorizedUserException {
         return extractClaim(token,Claims::getSubject);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) throws UnauthorizedUserException {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -56,61 +36,26 @@ public class JwtProvider {
         return generateToken(new ConcurrentHashMap<>(), userDetails);
     }
 
-    public String generateToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails
-    ) {
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-//    public String resolveToken(HttpServletRequest request) {
-//        return resolveToken(request, tokenHeaderName, tokenPrefix);
-//    }
-//
-//    public String resolveToken(HttpServletRequest request, String tokenHeaderName) {
-//        return resolveToken(request, tokenHeaderName, tokenPrefix);
-//    }
-//
-//    public String resolveToken(HttpServletRequest request, String tokenHeaderName, String startsWith) {
-//        String token = request.getHeader(tokenHeaderName.isEmpty() ? this.tokenHeaderName : tokenHeaderName);
-//        return resolveToken(token, startsWith);
-//    }
-//
-//    public String resolveToken(String token, String startsWith) {
-//        return token != null && token.startsWith(startsWith) && token.length() > startsWith.length()
-//                ? token.replace(startsWith, "") : null;
-//    }
-//
-//    public String resolveToken(String token) {
-//        return resolveToken(token, tokenPrefix);
-//    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {
         try {
-            String username = extractUsername(token);
-            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new HttpStatusException("Expired or invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
+            return (extractUsername(token).equals(userDetails.getUsername()));
+        } catch (ExpiredJwtException | IllegalArgumentException e) {
+            throw new UnauthorizedUserException("Expired or invalid JWT token");
         }
     }
 
-    public boolean isTokenValid(String token) throws RuntimeException {
-        try {
-            Jwts.parser()
-                    .verifyWith((SecretKey) getSigningKey()).build()
-                    .parseSignedClaims(token);
-            return !isTokenExpired(token);
-        } catch (JwtException e) {
-            throw new HttpStatusException("Invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (IllegalArgumentException e) {
-            throw new HttpStatusException("Expired JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public boolean isTokenValid(String token) throws UnauthorizedUserException {
+        return !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -121,12 +66,17 @@ public class JwtProvider {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith((SecretKey) getSigningKey()).build()
-//                .setSigningKey(getSigningKey()).build()
-                .parseSignedClaims(token).getPayload();
-//                .parseClaimsJws(token).getBody();
+    private Claims extractAllClaims(String token) throws UnauthorizedUserException {
+        try {
+            return getJwtParser().parseSignedClaims(token).getPayload(); // .parseClaimsJws(token).getBody()
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.error("       Error parsing JWT token when extractAllClaims(jwt) ", ex);
+            throw new UnauthorizedUserException("Expired or Invalid JWT token. " + ex);
+        }
+    }
+
+    public JwtParser getJwtParser() {
+        return Jwts.parser().verifyWith((SecretKey) getSigningKey()).build(); // .setSigningKey(getSigningKey()).build()
     }
 
     private Key getSigningKey() {
