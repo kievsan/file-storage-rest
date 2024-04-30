@@ -16,7 +16,7 @@ public class AuthTokenValidator {
     private final JWTUserDetails userDetails;
 
     public User validateJWT(String jwt, String logMsg, String errMsg) {
-        log(logMsg);
+        logg(logMsg);
         try {
             return userDetails.loadUserByJWT(jwt);
         } catch (UnauthorizedUserException ex) {
@@ -26,7 +26,7 @@ public class AuthTokenValidator {
         }
     }
 
-    public void log(String msg) {
+    public void logg(String msg) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         log.info(" {}:  user  {}, {}", msg, auth.getName(), auth.getAuthorities());
     }

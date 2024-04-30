@@ -36,6 +36,12 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(auth);
 
+//            Map<String, Object> claims = new ConcurrentHashMap<>();
+//            String authorities=  user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+//                    .collect(Collectors.joining(","));
+//            claims.put("authorities", authorities);
+//            var jwtToken = provider.generateToken(claims, user);
+
             var jwtToken = provider.generateToken(user);
             System.out.printf("login jwtRepo ->\n   %s:  %s\n", user.getUsername(), jwtToken);
 
