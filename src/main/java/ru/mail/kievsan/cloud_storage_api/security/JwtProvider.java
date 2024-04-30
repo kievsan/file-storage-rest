@@ -67,12 +67,20 @@ public class JwtProvider {
     }
 
     private Claims extractAllClaims(String token) throws UnauthorizedUserException {
+        Claims claims;
         try {
-            return getJwtParser().parseSignedClaims(token).getPayload(); // .parseClaimsJws(token).getBody()
-        } catch (JwtException | IllegalArgumentException ex) {
+            claims = getJwtParser().parseSignedClaims(token).getPayload(); // .parseClaimsJws(token).getBody()
+            if (claims == null) {
+                throw new NullPointerException(" Has no claims. ");
+            }
+            if (claims.getExpiration() == null || claims.getExpiration().before(new Date())) {
+                throw new JwtException(" Is expired. ");
+            }
+        } catch (NullPointerException | JwtException | IllegalArgumentException ex) {
             log.error("       Error parsing JWT token when extractAllClaims(jwt) ", ex);
             throw new UnauthorizedUserException("Expired or Invalid JWT token. " + ex);
         }
+        return claims;
     }
 
     public JwtParser getJwtParser() {
