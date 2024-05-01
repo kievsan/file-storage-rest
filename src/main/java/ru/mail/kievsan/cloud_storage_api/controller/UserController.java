@@ -22,6 +22,6 @@ public class UserController {
     public ResponseEntity<SignUpResponse> register(@RequestHeader("auth-token") String authToken,
                                                  @RequestBody SignUpRequest request) {
         return ResponseEntity.ok(userService.register(request, validator.validateJWT(authToken,
-                "Start File list controller", "Get file list error")));
+                "Start User controller", "User registration error")));
     }
 }
