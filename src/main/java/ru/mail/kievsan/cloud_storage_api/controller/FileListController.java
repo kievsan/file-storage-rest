@@ -11,7 +11,7 @@ import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
 
 import java.util.List;
 
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @EnableMethodSecurity

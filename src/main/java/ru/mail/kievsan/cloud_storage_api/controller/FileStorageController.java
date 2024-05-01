@@ -12,7 +12,7 @@ import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
 import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
 
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/file")

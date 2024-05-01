@@ -4,15 +4,12 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.service.AuthService;
 
-@Slf4j
-//@CrossOrigin(origins = {"http://localhost:8080"}, allowCredentials = "true", methods = {RequestMethod.POST}, allowedHeaders = {"*"})
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
