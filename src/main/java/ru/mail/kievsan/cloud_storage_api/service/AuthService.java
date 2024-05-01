@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import ru.mail.kievsan.cloud_storage_api.exception.AuthNotAuthenticateException;
 import ru.mail.kievsan.cloud_storage_api.exception.AuthUserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
+import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 
@@ -58,20 +59,15 @@ public class AuthService {
         }
     }
 //
-    public String logout(String token,
-                                         HttpServletRequest request,
-                                         HttpServletResponse response) {
-         Authentication auth = SecurityContextHolder.getContext().getAuthentication(); // почему-то AnonymousAuthenticationToken   ???
-        var usernameByAuth = auth.getName(); // anonymousUser  ???
+    public String logout(HttpServletRequest request, HttpServletResponse response, User user) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        var username = provider.extractUsername(token);
-
-        new SecurityContextLogoutHandler().logout(request, response, auth);  // для кого тогда logout ???
+        new SecurityContextLogoutHandler().logout(request, response, auth);
         request.getSession().invalidate();
 
-        System.out.printf("logout jwtRepo ->   %s:  %s\n", username, token);
-        log.info("User '{}' was logged out. JWT is disabled.", username);
+        System.out.printf("logout jwtRepo ->   %s\n", auth.getPrincipal());
+        log.info("User '{}' ({}) was logged out. JWT is disabled.", user.getUsername(), user.getNickname());
 
-        return "Success logout: " + username;
+        return String.format("Success logout: '%s' (%s)", user.getUsername(), user.getNickname()) ;
     }
 }
