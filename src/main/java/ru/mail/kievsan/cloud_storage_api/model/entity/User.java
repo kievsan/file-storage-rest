@@ -39,7 +39,7 @@ public class User implements UserDetails {
 
     private boolean enabled;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<File> userFiles;
 
     @Override
