@@ -11,29 +11,21 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
-import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 
-import java.util.Objects;
 import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class UserService {
 
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
-    private final JwtProvider provider;
 //
-    @Transactional
-    public SignUpResponse register(String token, SignUpRequest request) throws UserRegisterUserInUseException {
-        Predicate<User> USER_IS_ADMIN = user-> !(user == null || token.isEmpty())
-                && provider.isTokenValid(token, user) && user.isAccountNonLocked()
-                && user.getRole() == Role.ADMIN;
-        Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user)
-                && Objects.equals(user.getNickname(), "starter");
-
-        User owner = token.isEmpty() ? null : userRepo.findByEmail(provider.extractUsername(token)).orElse(null);
+    public SignUpResponse register(SignUpRequest request, User owner) throws UserRegisterUserInUseException {
+        Predicate<User> USER_IS_ADMIN = user-> user != null && user.isAccountNonLocked() && user.getRole() == Role.ADMIN;
+        Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user) && "starter".equals(user.getNickname());
 
         String msg = String.format("User '%s'", request.getEmail());
 

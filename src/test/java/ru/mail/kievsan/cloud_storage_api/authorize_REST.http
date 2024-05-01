@@ -30,7 +30,7 @@ Content-Type: application/json
 
 ###
 
-# Аутентификация   eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDdAZ21haWwuY29tIiwiaWF0IjoxNzE0MDE0NTYwLCJleHAiOjE3MTQxMDA5NjB9.APCq3-P51ls9z8Ev2sHfglEPrOUwU884-Uip_Hi7769pW_QaxVzrCIYvMfe319xn
+# Аутентификация
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -50,7 +50,7 @@ Content-Type: : application/json
 
 # Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user/reg
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDE5Njc5MiwiZXhwIjoxNzE0MTk3MDkyfQ.go7VPGpXq6M2bEVw-gtlHYW-E94Sevq__kjqWEH_ft7KmTos3sX3owUavPisQWte
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDU5MzI3OSwiZXhwIjoxNzE0NTkzODc5fQ.eobJZIrLzl3ymbPgpmcx7atK6UNQiuaVmM1RNN-8pcsSwiTqiZfvMt8wWZhwKsac
 Content-Type: application/json
 
 {
@@ -62,7 +62,7 @@ Content-Type: application/json
 
 ###
 
-# Аутентификация   eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDAxNTE2MSwiZXhwIjoxNzE0MTAxNTYxfQ.4lWpHst-vGXgsvsPNs-hvwEWqUh7U5T8l-tjgUROcL98o0vOJEXKp58GSedRCmPd
+# Аутентификация
 POST {{baseUrl}}/login
 Content-Type: application/json
 
