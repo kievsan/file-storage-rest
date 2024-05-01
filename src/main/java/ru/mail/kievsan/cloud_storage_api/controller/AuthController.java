@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.service.AuthService;
 
-//@CrossOrigin
+@CrossOrigin(methods = {RequestMethod.POST})
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
