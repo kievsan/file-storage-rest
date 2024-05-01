@@ -11,7 +11,8 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.service.AuthService;
 
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:8080"}, allowCredentials = "true", methods = {RequestMethod.POST}, allowedHeaders = {"*"})
+//@CrossOrigin(origins = {"http://localhost:8080"}, allowCredentials = "true", methods = {RequestMethod.POST}, allowedHeaders = {"*"})
+@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -23,10 +24,6 @@ public class AuthController {
     @PermitAll
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
-//        return ResponseEntity.ok()
-//                .header("Access-Control-Allow-Origin", "http://localhost:8080")
-//                .header("Vary", "Origin")
-//                .body(authService.authenticate(request));
     }
 
     @PostMapping ("/logout")
