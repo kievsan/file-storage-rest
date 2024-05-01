@@ -40,7 +40,7 @@ public class UserService {
             throw new UserRegisterUserInUseException("Username is already in use");
         }
         signup(newUser, msg);
-        return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getRole());
+        return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getEmail(), newUser.getRole());
     }
 //
     public void signup(User newUser, String msg) throws UserSignupIncompleteTransactionException {

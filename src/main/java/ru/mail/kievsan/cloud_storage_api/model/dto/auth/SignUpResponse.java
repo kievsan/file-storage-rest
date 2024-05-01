@@ -14,5 +14,6 @@ public class SignUpResponse { // Ответ: новый user
 
     private Long id;
     private String nickname;
+    private String email;
     private Role role;
 }
