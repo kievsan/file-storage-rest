@@ -43,6 +43,12 @@ public class FileStorageService {
 
     @Transactional
     public void editFileName(String filename, String newFileName, User user) {
+        if (newFileName == null || newFileName.isEmpty()) {
+            String msg = String.format("User %s: new file name is null or empty, storage file '%s'",
+                    user.getUsername(), filename);
+            log.error("{} {}", header, msg);
+            throw new InputDataException(msg);
+        }
         newFileName = newFileName.trim();
         if (!Objects.equals(filename, newFileName)) {
             String errMsg = String.format("User %s: file not found, filename had no edited '%s' -> '%s'",

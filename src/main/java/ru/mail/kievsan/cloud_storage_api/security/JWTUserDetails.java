@@ -17,16 +17,18 @@ public class JWTUserDetails implements UserDetailsService {
     private final JwtProvider provider;
 
     public User loadUserByJWT(String jwt) throws UnauthorizedUserException {
-        log.info("  Start JWTUserDetails.loadUserByJWT() :  token:  {}", jwt);
-        if (jwt == null || jwt.isEmpty()) {
-            log.error("  loadUserByJWT(jwt) ERRor:  Bad user auth token, is Null ");
-            throw new UnauthorizedUserException("loadUserByJWT: Bad user auth token");
+        log.info("  Start JWTUserDetails.loadUserByJWT() :  token:  '{}'", jwt);
+        String badJWTErr = "Bad user auth token";
+        jwt = provider.resolveToken(jwt);
+        if (jwt == null) {
+            log.error("  loadUserByJWT(jwt) ERRor:  {} or is Null ", badJWTErr);
+            throw new UnauthorizedUserException(badJWTErr);
         }
         try {
             return loadUserByUsername(provider.extractUsername(jwt));
         } catch (RuntimeException ex) {
-            log.error("  loadUserByJWT(jwt) ERRor:  Bad user auth token. {}", ex.getMessage());
-            throw new UnauthorizedUserException("loadUserByJWT: Bad user auth token");
+            log.error("  loadUserByJWT(jwt) ERRor:  {}. {}", badJWTErr, ex.getMessage());
+            throw new UnauthorizedUserException(badJWTErr);
         }
     }
     public User loadUserByUsername(String username) throws UnauthorizedUserException {

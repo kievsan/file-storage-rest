@@ -1,12 +1,12 @@
 # примеры API-запросов
 
- @baseUrl = http://localhost:5060/api/v1/file
+ @baseUrl = http://localhost:5055/api/v1/file
 
 ###
 
 # Переименование файла:
 PUT {{baseUrl}}?filename=example1.txt
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NDM2NTg0LCJleHAiOjE3MTQ0MzcxODR9.i-tYcABhTDD21yxPD7NOaraDaxIvkWTqsggR96u6UHBLCQREPuQGut--2WMWTgFv
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NDM2NTg0LCJleHAiOjE3MTQ0MzcxODR9.i-tYcABhTDD21yxPD7NOaraDaxIvkWTqsggR96u6UHBLCQREPuQGut--2WMWTgFv
 Content-Type: application/json
 
 {
@@ -17,6 +17,6 @@ Content-Type: application/json
 
 # Удаление файла:
 DELETE {{baseUrl}}?filename=example2.txt
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NDM2NTg0LCJleHAiOjE3MTQ0MzcxODR9.i-tYcABhTDD21yxPD7NOaraDaxIvkWTqsggR96u6UHBLCQREPuQGut--2WMWTgFv
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NDM2NTg0LCJleHAiOjE3MTQ0MzcxODR9.i-tYcABhTDD21yxPD7NOaraDaxIvkWTqsggR96u6UHBLCQREPuQGut--2WMWTgFv
 
 ###

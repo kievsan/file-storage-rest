@@ -1,6 +1,6 @@
 # примеры API-запросов
 
- @baseUrl = http://localhost:5060/api/v1
+ @baseUrl = http://localhost:5055/api/v1
 
 ###
 
@@ -43,14 +43,14 @@ Content-Type: application/json
 
 # Выход из учетной записи
 POST {{baseUrl}}/logout
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTI0MjUyLCJleHAiOjE3MTQxMjQ4NTJ9.fsf3z5ENVx9oxyQD9AaSGWUiwGMZYI3sNRmQLt12T27lhMeLeMLEfFo7jzuBKxgw
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTI0MjUyLCJleHAiOjE3MTQxMjQ4NTJ9.fsf3z5ENVx9oxyQD9AaSGWUiwGMZYI3sNRmQLt12T27lhMeLeMLEfFo7jzuBKxgw
 Content-Type: : application/json
 
 ###
 
-# Регистрация учетной записи
+# Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user/reg
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDE5Njc5MiwiZXhwIjoxNzE0MTk3MDkyfQ.go7VPGpXq6M2bEVw-gtlHYW-E94Sevq__kjqWEH_ft7KmTos3sX3owUavPisQWte
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDE5Njc5MiwiZXhwIjoxNzE0MTk3MDkyfQ.go7VPGpXq6M2bEVw-gtlHYW-E94Sevq__kjqWEH_ft7KmTos3sX3owUavPisQWte
 Content-Type: application/json
 
 {
@@ -70,11 +70,5 @@ Content-Type: application/json
   "login": "knhel77@gmail.com" ,
   "password": "1234567"
 }
-
-###
-
-# с параметрами ???
-GET {{baseUrl}}/logout?username=user1&password=11111
-Accept: application/json
 
 ###

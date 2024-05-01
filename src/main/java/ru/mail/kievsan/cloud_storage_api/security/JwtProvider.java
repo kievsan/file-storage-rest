@@ -46,6 +46,12 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String resolveToken(String token) {
+        String tokenPrefix = "Bearer ";
+        return token != null && token.length() > tokenPrefix.length()
+                && token.startsWith(tokenPrefix) ? token.replace(tokenPrefix, "") : null;
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {
         try {
             return (extractUsername(token).equals(userDetails.getUsername()));

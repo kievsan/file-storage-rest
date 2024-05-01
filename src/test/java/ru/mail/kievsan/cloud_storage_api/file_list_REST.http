@@ -1,12 +1,12 @@
 # примеры API-запросов
 
- @baseUrl = http://localhost:5060/api/v1/list
+ @baseUrl = http://localhost:5055/api/v1/list
 
 ###
 
 # Получение списка файлов:
 GET {{baseUrl}}?limit=0
-auth-token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NDM3MjI5LCJleHAiOjE3MTQ0Mzc4Mjl9.J-bwevBo1ZE8SSXmB-Wukf90KGnQC30HCC2ITYUF0fqS0TxC5kF4eNkxzkw2q5FZ
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NTM4MzI2LCJleHAiOjE3MTQ1Mzg5MjZ9.uL6JoMPrYG16SS8TaLOeCbKYgWMXlVMic8O-ycgoItrERAmmz1IB8jNpWPeXVplN
 Content-Type: application/json
 
 ###
