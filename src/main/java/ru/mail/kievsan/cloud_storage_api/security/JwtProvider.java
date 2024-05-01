@@ -48,8 +48,8 @@ public class JwtProvider {
 
     public String resolveToken(String token) {
         String tokenPrefix = "Bearer ";
-        return token != null && token.length() > tokenPrefix.length()
-                && token.startsWith(tokenPrefix) ? token.replace(tokenPrefix, "") : null;
+        boolean trueToken = token != null && token.length() > tokenPrefix.length() && token.startsWith(tokenPrefix) ;
+        return trueToken ? token.replace(tokenPrefix, "") : null;
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {

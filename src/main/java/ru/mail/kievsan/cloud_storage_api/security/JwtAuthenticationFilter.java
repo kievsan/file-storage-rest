@@ -29,8 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws UnauthorizedUserException, ServletException, IOException {
         final String jwt = request.getHeader("auth-token");
-        log.info("  Start JwtAuthenticationFilter.doFilterInternal() :  token  {}", jwt);
-        if(jwt != null ) {
+        log.info("Start JwtAuthenticationFilter.doFilterInternal() :  token  '{}'", jwt);
+        if (jwt != null && !jwt.isBlank() ) {
             try {
                 UserDetails user = jwtUserDetails.loadUserByJWT(jwt);
                 log.info("     userDetails:  '{}', {}", user.getUsername(), user.getAuthorities());

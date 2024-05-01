@@ -50,7 +50,7 @@ Content-Type: : application/json
 
 # Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user/reg
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNDU5MzI3OSwiZXhwIjoxNzE0NTkzODc5fQ.eobJZIrLzl3ymbPgpmcx7atK6UNQiuaVmM1RNN-8pcsSwiTqiZfvMt8wWZhwKsac
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDdAZ21haWwuY29tIiwiaWF0IjoxNzE0NjAwNTc5LCJleHAiOjE3MTQ2MDExNzl9.QkelOR21ZvgLNq1NqVV3j3_zyJCYHNOLZnmh4Xsa8ujBDY7Nc7-SYbDZM-E3Jg8c
 Content-Type: application/json
 
 {

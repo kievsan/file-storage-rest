@@ -20,7 +20,7 @@ public class JWTUserDetails implements UserDetailsService {
         log.info("  Start JWTUserDetails.loadUserByJWT() :  token:  '{}'", jwt);
         String badJWTErr = "Bad user auth token";
         jwt = provider.resolveToken(jwt);
-        if (jwt == null) {
+        if (jwt == null || jwt.isBlank())  {
             log.error("  loadUserByJWT(jwt) ERRor:  {} or is Null ", badJWTErr);
             throw new UnauthorizedUserException(badJWTErr);
         }

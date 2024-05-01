@@ -47,8 +47,8 @@ public class AuthService {
             System.out.printf("login jwtRepo ->\n   %s:  %s\n", user.getUsername(), jwtToken);
 
             auth = SecurityContextHolder.getContext().getAuthentication();
-            msg += String.format(" with ROLEs = %s authentication: %s", auth.getAuthorities(), auth.getPrincipal());
-            log.info(msg);
+            msg += String.format(" with ROLEs = %s authenticated: %s", auth.getAuthorities(), auth.getPrincipal());
+            log.info("SUCCESS! {}", msg);
             return new AuthResponse(jwtToken);
         } catch (UsernameNotFoundException ex) {
             msg += String.format(" %s: not found!", errMsg);

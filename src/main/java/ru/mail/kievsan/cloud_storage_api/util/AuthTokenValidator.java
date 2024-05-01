@@ -15,7 +15,7 @@ public class AuthTokenValidator {
 
     private final JWTUserDetails userDetails;
 
-    public User validateJWT(String jwt, String logMsg, String errMsg) {
+    public User validateJWT(String jwt, String logMsg, String errMsg) throws UnauthorizedUserException {
         logg(logMsg);
         try {
             return userDetails.loadUserByJWT(jwt);

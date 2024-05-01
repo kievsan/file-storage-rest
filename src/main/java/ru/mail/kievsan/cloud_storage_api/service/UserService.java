@@ -22,7 +22,7 @@ public class UserService {
 
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
-//
+    //
     public SignUpResponse register(SignUpRequest request, User owner) throws UserRegisterUserInUseException {
         Predicate<User> USER_IS_ADMIN = user-> user != null && user.isAccountNonLocked() && user.getRole() == Role.ADMIN;
         Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user) && "starter".equals(user.getNickname());
@@ -42,17 +42,17 @@ public class UserService {
         signup(newUser, msg);
         return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getEmail(), newUser.getRole());
     }
-//
+    //
     public void signup(User newUser, String msg) throws UserSignupIncompleteTransactionException {
         try {
             userRepo.save(newUser);
             var user = userRepo.findByEmail(newUser.getEmail()).orElseThrow();
-            msg += String.format("(%s) signup: Id=%s", user.getNickname(), user.getId());
+            msg += String.format(" (%s) signup: Id=%s", user.getNickname(), user.getId());
         } catch (RuntimeException ex) {
             msg += String.format(" was not signup: %s", ex.getMessage());
             log.info(msg);
             throw new UserSignupIncompleteTransactionException(msg);
         }
-        log.info(msg);
+        log.info("SUCCESS! {}", msg);
     }
 }
