@@ -29,8 +29,8 @@ public class UserJPARepoTests {
 
     @Autowired
     private UserJPARepo userRepo;
-    @Autowired
-    private PasswordEncoder encoder;
+//    @Autowired
+//    private PasswordEncoder encoder;
 
     private User testUser;
 
@@ -54,10 +54,11 @@ public class UserJPARepoTests {
         testUser = User.builder()
                 .nickname("testuser")
                 .email("testuser@mail.ru")
-                .password(encoder.encode("password"))
+//                .password(encoder.encode("password"))
+                .password("password")
                 .role(Role.USER)
                 .enabled(true)
-                .userFiles(userFiles)
+//                .userFiles(userFiles)
                 .build();
         userRepo.save(testUser);
     }
