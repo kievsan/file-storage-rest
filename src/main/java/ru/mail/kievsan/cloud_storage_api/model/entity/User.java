@@ -37,6 +37,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
     private boolean enabled;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
