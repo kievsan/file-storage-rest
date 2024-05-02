@@ -9,11 +9,11 @@ public enum Role implements GrantedAuthority {
     ADMIN("ROLE_ADMIN"),
     USER("ROLE_USER");
 
-    private final String vale;
+    private final String value;
 
     @Override
     public String getAuthority() {
-        return vale;
+        return value;
     }
 
 }
