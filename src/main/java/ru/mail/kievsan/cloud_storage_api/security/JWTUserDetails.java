@@ -16,24 +16,32 @@ public class JWTUserDetails implements UserDetailsService {
     private final UserJPARepo userRepo;
     private final JwtProvider provider;
 
-    public User loadUserByJWT(String jwt) throws UnauthorizedUserException {
-        log.info("  Start JWTUserDetails.loadUserByJWT() :  token:  '{}'", jwt);
-        String badJWTErr = "Bad user auth token";
-        jwt = provider.resolveToken(jwt);
-        if (jwt == null || jwt.isBlank())  {
-            log.error("  loadUserByJWT(jwt) ERRor:  {} or is Null ", badJWTErr);
-            throw new UnauthorizedUserException(badJWTErr);
-        }
-        try {
-            return loadUserByUsername(provider.extractUsername(jwt));
-        } catch (RuntimeException ex) {
-            log.error("  loadUserByJWT(jwt) ERRor:  {}. {}", badJWTErr, ex.getMessage());
-            throw new UnauthorizedUserException(badJWTErr);
-        }
-    }
+    @Override
     public User loadUserByUsername(String username) throws UnauthorizedUserException {
         return userRepo.findByEmail(username)
                 .orElseThrow(() -> new UnauthorizedUserException("User '" + username + "' not found"));
+    }
+
+    public User loadUserByJWT(String jwt) throws UnauthorizedUserException {
+        log.info("  Start JWTUserDetails.loadUserByJWT(), jwt = '{}'", jwt);
+        return loadUserByUsername(ValidateJWTandExtractUsername(jwt));
+    }
+
+    public String ValidateJWTandExtractUsername(String jwt) throws UnauthorizedUserException {
+        String badJWTExceptionMsg = "Bad user auth token";
+        String badJWTErrMsg = "loadUserByJWT(jwt) ERRor:  " + badJWTExceptionMsg;
+
+        jwt = provider.resolveToken(jwt);
+        if (jwt == null || jwt.isBlank())  {
+            log.error("  {} or is Null ", badJWTErrMsg);
+            throw new UnauthorizedUserException(badJWTExceptionMsg);
+        }
+        try {
+            return provider.extractUsername(jwt);
+        } catch (RuntimeException ex) {
+            log.error("  {}. {}", badJWTErrMsg, ex.getMessage());
+            throw new UnauthorizedUserException(badJWTExceptionMsg);
+        }
     }
 
 }

@@ -43,14 +43,14 @@ Content-Type: application/json
 
 # Выход из учетной записи
 POST {{baseUrl}}/logout
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTI0MjUyLCJleHAiOjE3MTQxMjQ4NTJ9.fsf3z5ENVx9oxyQD9AaSGWUiwGMZYI3sNRmQLt12T27lhMeLeMLEfFo7jzuBKxgw
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
 Content-Type: : application/json
 
 ###
 
 # Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user/reg
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDdAZ21haWwuY29tIiwiaWF0IjoxNzE0NjAwNTc5LCJleHAiOjE3MTQ2MDExNzl9.QkelOR21ZvgLNq1NqVV3j3_zyJCYHNOLZnmh4Xsa8ujBDY7Nc7-SYbDZM-E3Jg8c
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
 Content-Type: application/json
 
 {

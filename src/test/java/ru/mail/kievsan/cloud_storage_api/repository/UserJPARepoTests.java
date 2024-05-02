@@ -5,21 +5,18 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
-import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@DataJpaTest(properties = {
+//@DataJpaTest(properties = {
 //       "spring.datasource.url=jdbc:h2:mem:testdb",
 //        "jdbc:postgresql://localhost:5438/file_storage",
-        "spring.jpa.hibernate.ddl-auto=create-drop"}
-)
+//        "spring.jpa.hibernate.ddl-auto=create-drop"}
+//)
+@DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @RequiredArgsConstructor
 public class UserJPARepoTests {
@@ -28,19 +25,16 @@ public class UserJPARepoTests {
 
     @Autowired
     private UserJPARepo userRepo;
-//    @Autowired
-//    private PasswordEncoder encoder;
 
     private User testUser;
 
     private final String email = "testuser@mail.ru";
     private final String newUsername = "newUsername@mail.ru";
-//    private final List<File> userFiles = List.of(new File());
 
     @BeforeAll
     public static void testSuiteInit() {
         System.out.println("----------- Running User entity repository tests...");
-        suiteStartTime = System.currentTimeMillis(); // .nanoTime()
+        suiteStartTime = System.currentTimeMillis();
     }
 
     @AfterAll
@@ -54,11 +48,9 @@ public class UserJPARepoTests {
         testUser = User.builder()
                 .nickname("testuser")
                 .email(email)
-//                .password(encoder.encode("password"))
                 .password("password")
                 .role(Role.USER)
                 .enabled(true)
-//                .userFiles(userFiles)
                 .build();
         userRepo.save(testUser);
     }
