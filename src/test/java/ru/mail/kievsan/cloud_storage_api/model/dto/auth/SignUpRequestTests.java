@@ -18,7 +18,7 @@ public class SignUpRequestTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("Running dto SignUpRequest testing...");
+        System.out.println("----------- Running dto SignUpRequest testing...");
         suiteStartTime = System.currentTimeMillis(); // .nanoTime()
     }
 

@@ -53,6 +53,10 @@ public class User implements UserDetails {
         return this.email;
     }
 
+    public void setUsername(String username) {
+        this.email = username;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

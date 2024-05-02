@@ -13,7 +13,7 @@ public class AuthResponseTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("Running dto AuthResponse testing...");
+        System.out.println("----------- Running dto AuthResponse testing...");
         suiteStartTime = System.currentTimeMillis(); // .nanoTime()
     }
 

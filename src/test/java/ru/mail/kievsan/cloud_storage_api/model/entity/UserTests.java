@@ -26,7 +26,7 @@ public class UserTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("Running entity User testing...");
+        System.out.println("----------- Running entity User testing...");
         suiteStartTime = System.currentTimeMillis(); // .nanoTime()
     }
 

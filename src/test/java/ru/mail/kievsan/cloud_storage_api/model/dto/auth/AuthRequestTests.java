@@ -14,7 +14,7 @@ public class AuthRequestTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("Running dto AuthRequest testing...");
+        System.out.println("----------- Running dto AuthRequest testing...");
         suiteStartTime = System.currentTimeMillis(); // .nanoTime()
     }
 

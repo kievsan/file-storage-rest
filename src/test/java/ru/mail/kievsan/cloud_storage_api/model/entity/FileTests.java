@@ -23,7 +23,7 @@ public class FileTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("Running entity File testing...");
+        System.out.println("----------- Running entity File testing...");
         suiteStartTime = System.currentTimeMillis(); // .nanoTime()
     }
 

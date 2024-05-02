@@ -10,7 +10,7 @@ public class RoleTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("Running roles testing...");
+        System.out.println("----------- Running roles testing...");
         suiteStartTime = System.currentTimeMillis(); // .nanoTime()
     }
 
