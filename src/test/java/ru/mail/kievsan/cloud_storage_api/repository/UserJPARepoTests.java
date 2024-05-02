@@ -10,7 +10,6 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,8 +33,9 @@ public class UserJPARepoTests {
 
     private User testUser;
 
+    private final String email = "testuser@mail.ru";
     private final String newUsername = "newUsername@mail.ru";
-    private final List<File> userFiles = List.of(new File());
+//    private final List<File> userFiles = List.of(new File());
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -53,7 +53,7 @@ public class UserJPARepoTests {
         System.out.println("Starting new test " + this);
         testUser = User.builder()
                 .nickname("testuser")
-                .email("testuser@mail.ru")
+                .email(email)
 //                .password(encoder.encode("password"))
                 .password("password")
                 .role(Role.USER)
@@ -72,6 +72,7 @@ public class UserJPARepoTests {
     @Test
     void user_whenSaved_thenCanBeFoundById() {
         User savedUser = userRepo.findById(testUser.getId()).orElse(null);
+
         assertNotNull(savedUser);
         assertEquals(testUser.getUsername(), savedUser.getUsername());
         assertEquals(testUser.getPassword(), savedUser.getPassword());
@@ -90,10 +91,10 @@ public class UserJPARepoTests {
 
     @Test
     void user_whenFindByEmailCalled_thenUserIsFound() {
-        User foundUser = userRepo.findByEmail(newUsername).orElse(null);
+        User foundUser = userRepo.findByEmail(email).orElse(null);
 
         assertNotNull(foundUser);
-        assertEquals(newUsername, foundUser.getUsername());
+        assertEquals(email, foundUser.getUsername());
     }
 
 }
