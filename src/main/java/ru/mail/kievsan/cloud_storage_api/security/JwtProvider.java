@@ -64,11 +64,11 @@ public class JwtProvider {
         return !isTokenExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) throws UnauthorizedUserException {
         return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) {
+    private Date extractExpiration(String token) throws UnauthorizedUserException {
         return extractClaim(token, Claims::getExpiration);
     }
 

@@ -25,7 +25,11 @@ public class InputDataException extends AdviceException {
     }
 
     public InputDataException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {
-        super(message, httpStatus == null ? HttpStatus.BAD_REQUEST : httpStatus, controller, entryPoint, source);
+        super(message,
+                httpStatus == null ? HttpStatus.BAD_REQUEST : httpStatus,
+                controller == null ? "FILE" : controller,
+                entryPoint == null ? "'/file'" : entryPoint,
+                source);
     }
 
     public InputDataException(AdviceException ex, String message) {
