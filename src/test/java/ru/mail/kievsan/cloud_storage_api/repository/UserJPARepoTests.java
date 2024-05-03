@@ -8,8 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 //@DataJpaTest(properties = {
 //       "spring.datasource.url=jdbc:h2:mem:testdb",
@@ -29,7 +28,6 @@ public class UserJPARepoTests {
     private User testUser;
 
     private final String email = "testuser@mail.ru";
-    private final String newUsername = "newUsername@mail.ru";
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -66,12 +64,17 @@ public class UserJPARepoTests {
         User savedUser = userRepo.findById(testUser.getId()).orElse(null);
 
         assertNotNull(savedUser);
+        assertEquals(testUser.getNickname(), savedUser.getNickname());
         assertEquals(testUser.getUsername(), savedUser.getUsername());
         assertEquals(testUser.getPassword(), savedUser.getPassword());
+        assertEquals(testUser.getRole(), savedUser.getRole());
+        assertEquals(testUser.isEnabled(), savedUser.isEnabled());
+        assertIterableEquals(testUser.getUserFiles(), savedUser.getUserFiles());
     }
 
     @Test
     void user_whenUpdated_thenCanBeFoundByIdWithUpdatedData() {
+        String newUsername = "newUsername@mail.ru";
         testUser.setUsername(newUsername);
         userRepo.save(testUser);
 
