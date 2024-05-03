@@ -1,38 +1,44 @@
 package ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
-import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
-import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
+import ru.mail.kievsan.cloud_storage_api.exception.*;
 import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
 
 @Slf4j
 @RestControllerAdvice
 public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
 
-    public ErrResponse errResp(Exception ex, int id) {
-        ErrResponse errResp = new ErrResponse(ex.getMessage(), id);
-        log.error("[Runtime exception] {}", errResp);
-        return errResp;
+    public ErrResponse errResp(AdviceException ex) {
+        log.error(ex.log());
+        return new ErrResponse(ex.getMessage(), 0);
     }
 
-    @ExceptionHandler(InputDataException.class)
+    @ExceptionHandler(InputDataException.class)         // 400
     public ResponseEntity<ErrResponse> handlerErrInputData(InputDataException ex) {
-        return new ResponseEntity<>(errResp(ex, 400), HttpStatusCode.valueOf(400));
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 
-    @ExceptionHandler(UnauthorizedUserException.class)
-    public ResponseEntity<ErrResponse> handlerUnauthorizedUser(UnauthorizedUserException ex) {
-        return new ResponseEntity<>(errResp(ex, 401), HttpStatusCode.valueOf(401));
+    @ExceptionHandler(NotAuthenticateException.class)   // 401
+    public ResponseEntity<ErrResponse> handlerUserNotAuthenticate(NotAuthenticateException ex) {
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 
-    @ExceptionHandler(InternalServerException.class)
+    @ExceptionHandler(UserNotFoundException.class)      // 404
+    public ResponseEntity<ErrResponse> handlerUserNotFound(UserNotFoundException ex) {
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
+    }
+
+    @ExceptionHandler(UserRegistrationException.class) // 422, 500
+    public ResponseEntity<ErrResponse> handlerUserInUse(UserRegistrationException ex) {
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
+    }
+
+    @ExceptionHandler(InternalServerException.class)    // 500
     public ResponseEntity<ErrResponse> handlerServerErr(InternalServerException ex) {
-        return new ResponseEntity<>(errResp(ex, 500), HttpStatusCode.valueOf(500));
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 }

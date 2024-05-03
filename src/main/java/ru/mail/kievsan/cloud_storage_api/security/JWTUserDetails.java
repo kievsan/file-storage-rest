@@ -3,6 +3,7 @@ package ru.mail.kievsan.cloud_storage_api.security;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
@@ -17,9 +18,9 @@ public class JWTUserDetails implements UserDetailsService {
     private final JwtProvider provider;
 
     @Override
-    public User loadUserByUsername(String username) throws UnauthorizedUserException {
+    public User loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepo.findByEmail(username)
-                .orElseThrow(() -> new UnauthorizedUserException("User '" + username + "' not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found"));
     }
 
     public User loadUserByJWT(String jwt) throws UnauthorizedUserException {

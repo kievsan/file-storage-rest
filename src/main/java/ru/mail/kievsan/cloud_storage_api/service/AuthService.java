@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,8 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
-import ru.mail.kievsan.cloud_storage_api.exception.AuthNotAuthenticateException;
-import ru.mail.kievsan.cloud_storage_api.exception.AuthUserNotFoundException;
+import ru.mail.kievsan.cloud_storage_api.exception.NotAuthenticateException;
+import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
@@ -52,10 +53,10 @@ public class AuthService {
             return new AuthResponse(jwtToken);
         } catch (UsernameNotFoundException ex) {
             msg += String.format(" %s: not found!", errMsg);
-            throw new AuthUserNotFoundException(msg);
+            throw new UserNotFoundException(msg, HttpStatus.NOT_FOUND, "AUTH", "'/login'", "'authenticate service'");
         } catch (RuntimeException ex) {
             msg += String.format(" %s! %s", errMsg, ex.getMessage());
-            throw new AuthNotAuthenticateException(msg);
+            throw new NotAuthenticateException(msg);
         }
     }
 //

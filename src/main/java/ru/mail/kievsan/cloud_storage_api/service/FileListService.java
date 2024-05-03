@@ -1,19 +1,15 @@
 package ru.mail.kievsan.cloud_storage_api.service;
 
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.mail.kievsan.cloud_storage_api.exception.FileListUserNotFoundException;
-import ru.mail.kievsan.cloud_storage_api.exception.HttpStatusException;
+import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file_list.FileListResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
-import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,9 +33,7 @@ public class FileListService {
                     .collect(Collectors.toList());
         } catch (RuntimeException ex) {
             String msg = String.format("Get file list error:  %s", ex);
-            log.error("[FILE LIST controller error] {}", msg);
-            throw new FileListUserNotFoundException(msg);
+            throw new UserNotFoundException(msg, HttpStatus.NOT_FOUND, "FILE LIST", "'/list'", "'getFileList service'");
         }
     }
-
 }

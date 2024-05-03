@@ -4,6 +4,7 @@ import io.jsonwebtoken.io.Decoders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,7 +38,7 @@ public class FileStorageService {
         } catch (IOException | NullPointerException e) {
             String msg = String.format("User %s: error input data, upload file '%s'", user.getUsername(), filename);
             log.error("{} {}", header, msg);
-            throw new InputDataException(msg);
+            throw new InputDataException(msg, HttpStatus.BAD_REQUEST, "'/file'", "'uploadFile service'");
         }
     }
 
@@ -47,19 +48,21 @@ public class FileStorageService {
             String msg = String.format("User %s: new file name is null or empty, storage file '%s'",
                     user.getUsername(), filename);
             log.error("{} {}", header, msg);
-            throw new InputDataException(msg);
+            throw new InputDataException(msg, HttpStatus.BAD_REQUEST, "'/file'", "'editFileName service'");
         }
         newFileName = newFileName.trim();
         if (!Objects.equals(filename, newFileName)) {
             String errMsg = String.format("User %s: file not found, filename had no edited '%s' -> '%s'",
                     user.getUsername(), filename, newFileName);
-            checkForTheFile(false, filename, user, errMsg, new InputDataException(errMsg));
-
+            checkForTheFile(false, filename, user, errMsg,
+                    new InputDataException(errMsg, HttpStatus.BAD_REQUEST, "'/file'", "'editFileName service'")
+            );
             fileRepo.editFileNameByUser(user, filename, newFileName);
 
             errMsg = String.format("User %s: server error edit filename '%s' -> '%s'",
                     user.getUsername(), filename, newFileName);
-            checkForTheFile(true, filename, user, errMsg, new InternalServerException(errMsg));
+            checkForTheFile(true, filename, user, errMsg,
+                    new InternalServerException(errMsg, HttpStatus.INTERNAL_SERVER_ERROR, "'/file'", "'editFileName service'"));
         }
         log.info("[User {}] Success edit file name '{}' -> '{}'", user.getUsername(), filename, newFileName);
     }
@@ -67,18 +70,23 @@ public class FileStorageService {
     @Transactional
     public void deleteFile(String filename, User user) {
         String errMsg = String.format("User %s: delete file error, file not found '%s'", user.getUsername(), filename);
-        checkForTheFile(false, filename, user, errMsg, new InputDataException(errMsg));
-
+        checkForTheFile(false, filename, user, errMsg,
+                new InputDataException(errMsg, HttpStatus.BAD_REQUEST, "'/file'", "'deleteFile service'")
+        );
         fileRepo.deleteByUserAndFilename(user, filename);
 
         errMsg = String.format("User %s: server error delete file '%s'", user.getUsername(), filename);
-        checkForTheFile(true, filename, user, errMsg, new InternalServerException(errMsg));
+        checkForTheFile(true, filename, user, errMsg,
+                new InternalServerException(errMsg, HttpStatus.INTERNAL_SERVER_ERROR, "'/file'", "'deleteFile service'")
+        );
         log.info("[User {}] Success delete file '{}'", user.getUsername(), filename);
     }
 
     public File downloadFile(String filename, User user) {
         String errMsg = String.format("User %s: download file error, file not found '%s'", user.getUsername(), filename);
-        File file = checkForTheFile(false, filename, user, errMsg, new InputDataException(errMsg));
+        File file = checkForTheFile(false, filename, user, errMsg,
+                new InputDataException(errMsg, HttpStatus.BAD_REQUEST, "'/file'", "'downloadFile service'")
+        );
         log.info("[User {}] Success download file '{}'", user.getUsername(), filename);
         return file;
     }

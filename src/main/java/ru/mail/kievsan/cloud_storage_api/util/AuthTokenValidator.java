@@ -26,7 +26,7 @@ public class AuthTokenValidator {
             } else {
                 log.error(msg);
             }
-            throw new UnauthorizedUserException(msg);
+            throw new UnauthorizedUserException(ex, msg);
         }
     }
 

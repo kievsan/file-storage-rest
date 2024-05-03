@@ -2,11 +2,11 @@ package ru.mail.kievsan.cloud_storage_api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.mail.kievsan.cloud_storage_api.exception.UserRegisterUserInUseException;
-import ru.mail.kievsan.cloud_storage_api.exception.UserSignupIncompleteTransactionException;
+import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
@@ -23,7 +23,7 @@ public class UserService {
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
     //
-    public SignUpResponse register(SignUpRequest request, User owner) throws UserRegisterUserInUseException {
+    public SignUpResponse register(SignUpRequest request, User owner) throws UserRegistrationException {
         Predicate<User> USER_IS_ADMIN = user-> user != null && user.isAccountNonLocked() && user.getRole() == Role.ADMIN;
         Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user) && "starter".equals(user.getNickname());
 
@@ -37,21 +37,21 @@ public class UserService {
                 .enabled(true)
                 .build();
         if (userRepo.existsByEmail(newUser.getUsername())) {
-            throw new UserRegisterUserInUseException("Username is already in use");
+            throw new UserRegistrationException("The username is already in use, registration is not possible!",
+                    HttpStatus.UNPROCESSABLE_ENTITY);
         }
         signup(newUser, msg);
         return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getEmail(), newUser.getRole());
     }
     //
-    public void signup(User newUser, String msg) throws UserSignupIncompleteTransactionException {
+    public void signup(User newUser, String msg) throws UserRegistrationException {
         try {
             userRepo.save(newUser);
             var user = userRepo.findByEmail(newUser.getEmail()).orElseThrow();
             msg += String.format(" (%s) signup: Id=%s", user.getNickname(), user.getId());
         } catch (RuntimeException ex) {
             msg += String.format(" was not signup: %s", ex.getMessage());
-            log.info(msg);
-            throw new UserSignupIncompleteTransactionException(msg);
+            throw new UserRegistrationException(msg);
         }
         log.info("SUCCESS! {}", msg);
     }
