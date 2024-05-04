@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws UnauthorizedUserException, ServletException, IOException {
         final String jwt = request.getHeader("auth-token");
-        log.info("Start JwtAuthenticationFilter.doFilterInternal() :  token  '{}'", jwt);
+        log.info(">----------------< Start JwtAuthenticationFilter.doFilterInternal() :  token  '{}'", jwt);
 //        if (jwt != null && !jwt.isBlank() ) {
             try {
                 UserDetails user = jwtUserDetails.loadUserByJWT(jwt);
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception ex) {
-                log.error("Failed to execute JwtAuthenticationFilter.doFilterInternal():\t{}", ex.getMessage());
+                log.error(">----------------< Failed to execute JwtAuthenticationFilter.doFilterInternal():\t{}", ex.getMessage());
                 SecurityContextHolder.clearContext();
                 response.sendError(404, ex.getMessage());
                 return;
