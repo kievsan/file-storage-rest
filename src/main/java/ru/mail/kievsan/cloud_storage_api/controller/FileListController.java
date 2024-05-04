@@ -4,6 +4,7 @@ import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file_list.FileListResponse;
 import ru.mail.kievsan.cloud_storage_api.service.FileListService;
@@ -23,6 +24,7 @@ public class FileListController {
 
 //    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PermitAll
+    @Validated
     @GetMapping
     ResponseEntity<List<FileListResponse>> getFileList(@RequestHeader("auth-token") String authToken,
                                                        @RequestParam("limit") Integer limit) {
