@@ -31,18 +31,16 @@ public class JWTUserDetails implements UserDetailsService {
     public String ValidateJWTandExtractUsername(String jwt) throws UnauthorizedUserException {
         String badJWTExceptionMsg = "Bad user auth token";
         String badJWTErrMsg = "loadUserByJWT(jwt) ERRor:  " + badJWTExceptionMsg;
-
-        jwt = provider.resolveToken(jwt);
-        if (jwt == null || jwt.isBlank())  {
-            log.error("  {} or is Null ", badJWTErrMsg);
-            throw new UnauthorizedUserException(badJWTExceptionMsg);
-        }
         try {
-            return provider.extractUsername(jwt);
+            return provider.extractUsername(validateJWT(jwt));
         } catch (RuntimeException ex) {
             log.error("  {}. {}", badJWTErrMsg, ex.getMessage());
             throw new UnauthorizedUserException(badJWTExceptionMsg);
         }
+    }
+
+    public String validateJWT(String jwt) throws UnauthorizedUserException {
+        return provider.resolveToken(jwt);
     }
 
 }

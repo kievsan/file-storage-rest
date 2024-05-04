@@ -3,10 +3,13 @@ package ru.mail.kievsan.cloud_storage_api.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 
 import javax.crypto.SecretKey;
@@ -23,17 +26,8 @@ public class JwtProvider {
 
     private static final String SECRET_KEY = "5wpkzuGthhtkToSjB/s/6ulZJeV2hYKbPyz9C0WFRIDiYtrOJvvPFb3UeZimcWV/";
 
-    public String extractUsername(String token) throws UnauthorizedUserException {
-        return extractClaim(token,Claims::getSubject);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) throws UnauthorizedUserException {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new ConcurrentHashMap<>(), userDetails);
+    public String extractUsername(String token) {
+        return getJwtParser().parseSignedClaims((token)).getPayload().getSubject();
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
@@ -46,47 +40,70 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String resolveToken(String token) {
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(new ConcurrentHashMap<>(), userDetails);
+    }
+
+    public String generateToken(Authentication auth) {
+        return generateToken((UserDetails) auth.getPrincipal());
+    }
+
+    public String resolveToken(String rawToken) throws UnauthorizedUserException {
         String tokenPrefix = "Bearer ";
-        boolean trueToken = token != null && token.length() > tokenPrefix.length() && token.startsWith(tokenPrefix) ;
-        return trueToken ? token.replace(tokenPrefix, "") : null;
+        if (StringUtils.hasText(rawToken) && rawToken.trim().startsWith(tokenPrefix)) {
+            String trueToken = rawToken.replace(tokenPrefix, "");  // rawToken.substring(tokenPrefix.length());
+            return isTokenValid(trueToken) ? trueToken : null;
+        }
+        throw new UnauthorizedUserException("Invalid JWT token.");
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {
         try {
             return (extractUsername(token).equals(userDetails.getUsername()));
-        } catch (ExpiredJwtException | IllegalArgumentException e) {
-            throw new UnauthorizedUserException("Expired or invalid JWT token");
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new UnauthorizedUserException("Expired or invalid JWT token.");
         }
     }
 
     public boolean isTokenValid(String token) throws UnauthorizedUserException {
-        return !isTokenExpired(token);
+        String err = "       Error parsing JWT token... ";
+        try {
+            getJwtParser().parseSignedClaims(token);
+            return true;
+        }  catch (ExpiredJwtException ex) {
+            err += "Expired JWT token. " + ex.getMessage();
+        } catch (UnsupportedJwtException ex) {
+            err += "Unsupported JWT token. " + ex.getMessage();
+        } catch (IllegalArgumentException ex) {
+            err += "JWT claims string is empty. " + ex.getMessage();
+        } catch (SecurityException ex) {
+            err += "there is an error with the signature of you token. " + ex.getMessage();
+        } catch (MalformedJwtException ex) {
+            err += "Invalid JWT token. " + ex.getMessage();
+        } catch (JwtException ex) {
+            err += "Problem JWT token. " + ex.getMessage();
+        } catch (RuntimeException ex) {
+            err += "Some problem JWT token. " + ex.getMessage();
+        }
+        log.error(err);
+        throw new UnauthorizedUserException("Expired or invalid JWT token.");
     }
 
-    private boolean isTokenExpired(String token) throws UnauthorizedUserException {
+    private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) throws UnauthorizedUserException {
+    private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token) throws UnauthorizedUserException {
-        Claims claims;
-        try {
-            claims = getJwtParser().parseSignedClaims(token).getPayload(); // .parseClaimsJws(token).getBody()
-            if (claims == null) {
-                throw new NullPointerException(" Has no claims. ");
-            }
-            if (claims.getExpiration() == null || claims.getExpiration().before(new Date())) {
-                throw new JwtException(" Is expired. ");
-            }
-        } catch (NullPointerException | JwtException | IllegalArgumentException ex) {
-            log.error("       Error parsing JWT token when extractAllClaims(jwt) ", ex);
-            throw new UnauthorizedUserException("Expired or Invalid JWT token. " + ex);
-        }
-        return claims;
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return getJwtParser().parseSignedClaims(token).getPayload();
     }
 
     public JwtParser getJwtParser() {

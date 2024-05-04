@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception ex) {
-                log.info("Failed to execute JwtAuthenticationFilter.doFilterInternal():\t{}", ex.getMessage());
+                log.error("Failed to execute JwtAuthenticationFilter.doFilterInternal():\t{}", ex.getMessage());
                 SecurityContextHolder.clearContext();
                 response.sendError(404, ex.getMessage());
                 return;
