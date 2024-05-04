@@ -27,8 +27,6 @@ public class UserService {
         Predicate<User> USER_IS_ADMIN = user-> user != null && user.isAccountNonLocked() && user.getRole() == Role.ADMIN;
         Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user) && "starter".equals(user.getNickname());
 
-        String msg = String.format("User '%s'", request.getEmail());
-
         var newUser = User.builder()
                 .nickname(request.getNickname())
                 .email(request.getEmail())
@@ -40,17 +38,18 @@ public class UserService {
             throw new UserRegistrationException("The username is already in use, registration is not possible!",
                     HttpStatus.UNPROCESSABLE_ENTITY);
         }
-        signup(newUser, msg);
+        signup(newUser);
         return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getEmail(), newUser.getRole());
     }
     //
-    public void signup(User newUser, String msg) throws UserRegistrationException {
+    public void signup(User newUser) throws UserRegistrationException {
+        String msg = String.format("User %s (%s)", newUser.getUsername(), newUser.getNickname());
         try {
             userRepo.save(newUser);
             var user = userRepo.findByEmail(newUser.getEmail()).orElseThrow();
-            msg += String.format(" (%s) signup: Id=%s", user.getNickname(), user.getId());
+            msg += " signup: Id=" + user.getId();
         } catch (RuntimeException ex) {
-            msg += String.format(" was not signup: %s", ex.getMessage());
+            msg += " was not signup: %s" + ex.getMessage();
             throw new UserRegistrationException(msg);
         }
         log.info("SUCCESS! {}", msg);
