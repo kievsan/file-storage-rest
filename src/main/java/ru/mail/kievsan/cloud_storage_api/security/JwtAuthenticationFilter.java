@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws UnauthorizedUserException, ServletException, IOException {
         final String jwt = request.getHeader("auth-token");
         log.info("Start JwtAuthenticationFilter.doFilterInternal() :  token  '{}'", jwt);
-        if (jwt != null && !jwt.isBlank() ) {
+//        if (jwt != null && !jwt.isBlank() ) {
             try {
                 UserDetails user = jwtUserDetails.loadUserByJWT(jwt);
                 log.info("     userDetails:  '{}', {}", user.getUsername(), user.getAuthorities());
@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.sendError(404, ex.getMessage());
                 return;
             }
-        }
+//        }
         filterChain.doFilter(request, response);
     }
 }

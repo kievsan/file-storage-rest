@@ -18,7 +18,7 @@ public class AuthTokenValidator {
     public User validateJWT(String jwt, String logMsg, String errMsg) throws UnauthorizedUserException {
         logg(logMsg);
         try {
-            return userDetails.loadUserByJWT(jwt);
+            return userDetails.loadUserByJWT(jwt); // валидация jwt и выдача user
         } catch (UnauthorizedUserException ex) {
             String msg = String.format("%s:  user unauthorized.  %s", errMsg, ex);
             if (errMsg.toLowerCase().contains("warn")) {

@@ -54,7 +54,7 @@ public class JwtProvider {
             String trueToken = rawToken.replace(tokenPrefix, "");  // rawToken.substring(tokenPrefix.length());
             return isTokenValid(trueToken) ? trueToken : null;
         }
-        throw new UnauthorizedUserException("Invalid JWT token.");
+        throw new UnauthorizedUserException("Empty or invalid JWT token.");
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {
