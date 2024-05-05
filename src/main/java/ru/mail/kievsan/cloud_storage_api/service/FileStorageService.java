@@ -4,7 +4,6 @@ import io.jsonwebtoken.io.Decoders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -93,7 +92,7 @@ public class FileStorageService {
 
     public File checkForTheFile(boolean exists, String filename, User user, String errMsg, RuntimeException exception) {
         File file = fileRepo.findByUserAndFilename(user, filename);
-        if (file != null && exists) {
+        if (Objects.equals(file != null, exists)) {
             log.error("{} {}", header, errMsg);
             throw exception;
         }
