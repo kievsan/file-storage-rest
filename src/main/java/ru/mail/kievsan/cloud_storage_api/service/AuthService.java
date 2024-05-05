@@ -45,7 +45,7 @@ public class AuthService {
 //            var jwtToken = provider.generateToken(claims, user);
 
             var jwtToken = provider.generateToken(user);
-            System.out.printf("login jwtRepo ->\n   %s:  %s\n", user.getUsername(), jwtToken);
+            System.out.printf("login jwtRepo ->\n   %s:  '%s...'\n", user.getUsername(), jwtToken.substring(0,20));
 
             auth = SecurityContextHolder.getContext().getAuthentication();
             msg += String.format(" with ROLEs = %s authenticated: %s", auth.getAuthorities(), auth.getPrincipal());

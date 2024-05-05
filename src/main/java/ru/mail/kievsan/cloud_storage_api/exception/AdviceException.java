@@ -43,6 +43,10 @@ public class AdviceException extends RuntimeException {
         this.source = source;
     }
 
+    public AdviceException(AdviceException ex) {
+        this(ex.getMessage(), ex.httpStatus, ex.controller, ex.entryPoint, ex.source);
+    }
+
     public AdviceException(AdviceException ex, String message) {
         this(message, ex.httpStatus, ex.controller, ex.entryPoint, ex.source);
     }
@@ -51,8 +55,8 @@ public class AdviceException extends RuntimeException {
         String caption = getClass().getName();
         return String.format("[%s %s %s (%s)] %s  %s",
                 controller.isBlank() ? "" : controller.toUpperCase(),
-                entryPoint.isBlank() ? "" : entryPoint + " err",
-                httpStatus,
+                entryPoint.isBlank() ? "" : entryPoint,
+                "err " + httpStatus.toString(),
                 List.of(caption.split("\\.")).getLast(),
                 source.isBlank() ? "" : source + ": ",
                 getMessage());

@@ -23,7 +23,12 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(NotAuthenticateException.class)   // 401
-    public ResponseEntity<ErrResponse> handlerUserNotAuthenticate(NotAuthenticateException ex) {
+    public ResponseEntity<ErrResponse> handlerUnauthorizedUser(NotAuthenticateException ex) {
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
+    }
+
+    @ExceptionHandler(UnauthorizedUserException.class)   // 401
+    public ResponseEntity<ErrResponse> handlerUnauthorizedUser(UnauthorizedUserException ex) {
         return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 
@@ -33,7 +38,7 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(UserRegistrationException.class) // 422, 500
-    public ResponseEntity<ErrResponse> handlerUserInUse(UserRegistrationException ex) {
+    public ResponseEntity<ErrResponse> handlerUserRegistrationErr(UserRegistrationException ex) {
         return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 

@@ -24,7 +24,7 @@ public class JWTUserDetails implements UserDetailsService {
     }
 
     public User loadUserByJWT(String jwt) throws UnauthorizedUserException {
-        log.info("  Start JWTUserDetails.loadUserByJWT(), jwt = '{}'", jwt);
+        log.info("  Start JWTUserDetails.loadUserByJWT(), jwt = '{}'", jwtPresent(jwt));
         return loadUserByUsername(ValidateJWTandExtractUsername(jwt));
     }
 
@@ -34,13 +34,17 @@ public class JWTUserDetails implements UserDetailsService {
         try {
             return provider.extractUsername(validateJWT(jwt));
         } catch (RuntimeException ex) {
-            log.error("  {}. {}", badJWTErrMsg, ex.getMessage());
+            log.warn("  {}. {}", badJWTErrMsg, ex.getMessage());
             throw new UnauthorizedUserException(badJWTExceptionMsg);
         }
     }
 
     public String validateJWT(String jwt) throws UnauthorizedUserException {
         return provider.resolveToken(jwt);
+    }
+
+    public final String jwtPresent(String jwt) {
+        return jwt == null || jwt.isBlank() ? "" : jwt.substring(0,20) + "...";
     }
 
 }
