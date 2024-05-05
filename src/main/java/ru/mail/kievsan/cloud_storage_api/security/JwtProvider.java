@@ -1,9 +1,8 @@
 package ru.mail.kievsan.cloud_storage_api.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -13,19 +12,27 @@ import org.springframework.util.StringUtils;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.generateKey;
+import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.getSigningKey;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class JwtProvider {
 
-    private static final String SECRET_KEY = "5wpkzuGthhtkToSjB/s/6ulZJeV2hYKbPyz9C0WFRIDiYtrOJvvPFb3UeZimcWV/";
+    private String secretKey;
+
+    @PostConstruct
+    protected void secretInit() {
+        secretKey = generateKey();
+        log.warn(">--------------< Secret key: {}", secretKey);
+    }
 
     public String extractUsername(String token) {
         return getJwtParser().parseSignedClaims((token)).getPayload().getSubject();
@@ -37,7 +44,7 @@ public class JwtProvider {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
-                .signWith(getSigningKey())
+                .signWith(getSigningKey(secretKey))
                 .compact();
     }
 
@@ -106,12 +113,7 @@ public class JwtProvider {
     }
 
     public JwtParser getJwtParser() {
-        return Jwts.parser().verifyWith((SecretKey) getSigningKey()).build(); // .setSigningKey(getSigningKey()).build()
-    }
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Jwts.parser().verifyWith((SecretKey) getSigningKey(secretKey)).build(); // .setSigningKey(getSigningKey()).build()
     }
 
 }
