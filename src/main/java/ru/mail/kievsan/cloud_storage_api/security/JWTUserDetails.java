@@ -25,22 +25,21 @@ public class JWTUserDetails implements UserDetailsService {
 
     public User loadUserByJWT(String jwt) throws UnauthorizedUserException {
         log.info("  Start JWTUserDetails.loadUserByJWT(), jwt = '{}'", jwtPresent(jwt));
-        return loadUserByUsername(ValidateJWTandExtractUsername(jwt));
-    }
-
-    public String ValidateJWTandExtractUsername(String jwt) throws UnauthorizedUserException {
         String badJWTExceptionMsg = "Bad user auth token";
-        String badJWTErrMsg = "loadUserByJWT(jwt) ERRor:  " + badJWTExceptionMsg;
+        String badJWTErrMsg = "loadUserByJWT(jwt) warn:  " + badJWTExceptionMsg;
         try {
-            return provider.extractUsername(validateJWT(jwt));
+            return loadUserByUsername(provider.extractUsername(validatedJWT(jwt)));
         } catch (RuntimeException ex) {
             log.warn("  {}. {}", badJWTErrMsg, ex.getMessage());
             throw new UnauthorizedUserException(badJWTExceptionMsg);
         }
     }
 
-    public String validateJWT(String jwt) throws UnauthorizedUserException {
-        return provider.resolveToken(jwt);
+    public String validatedJWT(String jwt) throws UnauthorizedUserException {
+        String trueJWT = provider.resolveToken(jwt)
+                .orElseThrow(() -> new UnauthorizedUserException("Empty or invalid JWT token."));
+        provider.validateToken(trueJWT);
+        return trueJWT;
     }
 
     public final String jwtPresent(String jwt) {

@@ -11,11 +11,11 @@ import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthTokenValidator {
+public class UserProvider {
 
     private final JWTUserDetails userDetails;
 
-    public User validateJWT(String jwt, String logMsg, String errMsg) throws UnauthorizedUserException {
+    public User trueUser(String jwt, String logMsg, String errMsg) throws UnauthorizedUserException {
         logg(logMsg);
         try {
             return userDetails.loadUserByJWT(jwt); // валидация jwt и выдача user

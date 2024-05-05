@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
-import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 
 import java.io.IOException;
 
@@ -38,14 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.info(">--------------< Start JwtAuthenticationFilter.doFilterInternal() :  token  '{}'", jwtUserDetails.jwtPresent(jwt));
 
         if (jwt == null || jwt.isBlank()) {
-            try {
-                ifRequiredTokenURL(request.getRequestURI(), request.getMethod());
-            } catch (UnauthorizedUserException ex) {
-                shutDown(ex);
-//                shutDown(ex.getMessage());
-//                response.sendError(401, ex.getMessage());
-//                return;
-            }
+            shutDownIfRequiredTokenURL(request.getRequestURI(), request.getMethod());
         } else {
             try {
                 UserDetails user = jwtUserDetails.loadUserByJWT(jwt);
@@ -54,26 +46,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception ex) {
-                shutDown(new UserNotFoundException(ex.getMessage(), null, null, null, "'JwtAuthenticationFilter'"));
-//                shutDown(ex.getMessage());
-//                response.sendError(404, ex.getMessage());
+                shutDown(new UnauthorizedUserException(ex.getMessage(), null, null, null, "'JwtAuthenticationFilter'"));
+//                response.sendError(401, ex.getMessage());
 //                return;
             }
         }
         filterChain.doFilter(request, response);
     }
 
+    private void shutDownIfRequiredTokenURL(String uri, String method) {
+        if (!notRequiredTokenURLs.contains(uri)) {
+            String service = String.format("'%s' %s request", uri, method);
+            String err = String.format(" no JWT header '%s'.", jwtHeaderName);
+            shutDown(new UnauthorizedUserException(err, null, null, service, "'JwtAuthenticationFilter'"));
+        }
+    }
+
     private void shutDown(RuntimeException ex) {
         log.error(">--------------< Failed to execute JwtAuthenticationFilter.doFilterInternal():\t{}", ex.getMessage());
         SecurityContextHolder.clearContext();
         throw ex;
-    }
-
-    private void ifRequiredTokenURL(String uri, String method) {
-        if (!notRequiredTokenURLs.contains(uri)) {
-            String service = String.format("'%s' %s request", uri, method);
-            String err = String.format(" no JWT header '%s'.", jwtHeaderName);
-            throw new UnauthorizedUserException(err, null, null, service, "'JwtAuthenticationFilter'");
-        }
     }
 }

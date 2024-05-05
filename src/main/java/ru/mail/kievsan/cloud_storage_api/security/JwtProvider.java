@@ -16,6 +16,7 @@ import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -48,28 +49,18 @@ public class JwtProvider {
         return generateToken((UserDetails) auth.getPrincipal());
     }
 
-    public String resolveToken(String rawToken) throws UnauthorizedUserException {
+    public Optional<String> resolveToken(String rawToken) {
         String tokenPrefix = "Bearer ";
-        if (StringUtils.hasText(rawToken) && rawToken.trim().startsWith(tokenPrefix)) {
-            String trueToken = rawToken.replace(tokenPrefix, "");  // rawToken.substring(tokenPrefix.length());
-            return isTokenValid(trueToken) ? trueToken : null;
-        }
-        throw new UnauthorizedUserException("Empty or invalid JWT token.");
+        boolean isTrueToken = StringUtils.hasText(rawToken) && rawToken.trim().startsWith(tokenPrefix);
+        return isTrueToken ? Optional.of(rawToken.replace(tokenPrefix, "")) : Optional.empty();
+        // rawToken.substring(tokenPrefix.length());
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {
-        try {
-            return (extractUsername(token).equals(userDetails.getUsername()));
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new UnauthorizedUserException("Expired or invalid JWT token.");
-        }
-    }
-
-    public boolean isTokenValid(String token) throws UnauthorizedUserException {
+    public void validateToken(String token) throws UnauthorizedUserException {
         String err = "       Error parsing JWT token... ";
         try {
             getJwtParser().parseSignedClaims(token);
-            return true;
+            return;
         }  catch (ExpiredJwtException ex) {
             err += "Expired JWT token. " + ex.getMessage();
         } catch (UnsupportedJwtException ex) {
@@ -87,6 +78,14 @@ public class JwtProvider {
         }
         log.error(err);
         throw new UnauthorizedUserException("Expired or invalid JWT token.");
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) throws UnauthorizedUserException {
+        try {
+            return (extractUsername(token).equals(userDetails.getUsername()));
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new UnauthorizedUserException("Expired or invalid JWT token.");
+        }
     }
 
     private boolean isTokenExpired(String token) {

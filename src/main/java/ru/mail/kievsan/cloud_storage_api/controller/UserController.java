@@ -9,7 +9,7 @@ import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
-import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
+import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,7 +17,7 @@ import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
 public class UserController {
 
     private final UserService userService;
-    private final AuthTokenValidator validator;
+    private final UserProvider provider;
 
     @PostMapping("/reg")
     @PermitAll
@@ -25,7 +25,7 @@ public class UserController {
         try {
             var token = httpRequest.getHeader("auth-token");
             return ResponseEntity.ok(userService.register(request,
-                    validator.validateJWT(token, "Start User controller", "User registration WARNING")));
+                    provider.trueUser(token, "Start User controller", "User registration WARNING")));
         } catch (UnauthorizedUserException ex) {
             return ResponseEntity.ok(userService.register(request, null));
         }

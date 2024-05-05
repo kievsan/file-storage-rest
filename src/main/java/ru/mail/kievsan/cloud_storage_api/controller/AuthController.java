@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.service.AuthService;
-import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
+import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @CrossOrigin(methods = {RequestMethod.POST})
 @RestController
@@ -17,7 +17,7 @@ import ru.mail.kievsan.cloud_storage_api.util.AuthTokenValidator;
 public class AuthController {
 
     private final AuthService service;
-    private final AuthTokenValidator validator;
+    private final UserProvider provider;
 
     @PostMapping("/login")
     @PermitAll
@@ -29,7 +29,7 @@ public class AuthController {
     @PermitAll
     public ResponseEntity<String> logout(@RequestHeader("auth-token") String authToken,
                                          HttpServletRequest request, HttpServletResponse response) {
-        return ResponseEntity.ok(service.logout(request, response, validator.validateJWT(authToken,
+        return ResponseEntity.ok(service.logout(request, response, provider.trueUser(authToken,
                         "Start Auth controller", "Logout error")));
     }
 
