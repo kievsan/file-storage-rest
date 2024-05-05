@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.SecurityException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -26,11 +27,18 @@ import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.ge
 @Service
 public class JwtProvider {
 
+    @Value("${security.jwt.token.expire-length}")
+    private long tokenLifetime;     // in milliseconds
+
+    @Value("${security.jwt.token.secret-key}")
+    private String secret;
+
     private String secretKey;
 
     @PostConstruct
     protected void secretInit() {
-        secretKey = generateKey();
+        boolean secretExists = secret != null && secret.trim().equals(secret) && secret.length() > 10;
+        secretKey = secretExists ? generateKey(secret) : generateKey();
         log.warn(">--------------< Secret key: {}", secretKey);
     }
 
@@ -43,7 +51,7 @@ public class JwtProvider {
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
                 .signWith(getSigningKey(secretKey))
                 .compact();
     }
