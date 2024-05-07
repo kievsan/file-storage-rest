@@ -15,5 +15,5 @@ public class EditFileNameRequest { // Запрос на изменение им�
 
     @Size(min = 1, max = 100, message = "filename: до 100 символов")
     @NotBlank(message = "filename не должен быть пустым!")
-    private String name;
+    private String filename;
 }
