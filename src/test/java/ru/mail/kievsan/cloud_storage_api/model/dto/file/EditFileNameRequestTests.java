@@ -7,7 +7,7 @@ public class EditFileNameRequestTests {
 
     private static long suiteStartTime;
 
-    private final String name = "example";
+    private final String filename = "example";
 
     private EditFileNameRequest request, request2;
 
@@ -25,7 +25,7 @@ public class EditFileNameRequestTests {
     @BeforeEach
     public void runTest() {
         System.out.println("Starting new test " + this);
-        request = new EditFileNameRequest(this.name);
+        request = new EditFileNameRequest(this.filename);
     }
 
     @AfterEach
@@ -38,19 +38,19 @@ public class EditFileNameRequestTests {
     @DisplayName("dtoEditFileNameRequestClassTest")
     public void requestClassTest() {
         assertEquals(EditFileNameRequest.class, request.getClass());
-        assertEquals(String.class, request.getName().getClass());
+        assertEquals(String.class, request.getFilename().getClass());
     }
 
     @Test
     @DisplayName("dtoEditFileNameRequestObjTest")
     public void requestObjTest() {
-        assertEquals(name, request.getName());
+        assertEquals(filename, request.getFilename());
     }
 
     @Test
     @DisplayName("dtoEditFileNameRequestObjEqualTest")
     public void requestObjectsEqualTest() {
-        request2 = new EditFileNameRequest(name);
-        assertEquals(request2.equals(request), request2.getName().equals(request.getName()));
+        request2 = new EditFileNameRequest(filename);
+        assertEquals(request2.equals(request), request2.getFilename().equals(request.getFilename()));
     }
 }

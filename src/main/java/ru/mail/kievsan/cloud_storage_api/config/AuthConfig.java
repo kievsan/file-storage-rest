@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,4 +37,8 @@ public class AuthConfig {
 //        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    @Bean
+    public UserProvider userProvider() {
+        return new UserProvider();
+    }
 }

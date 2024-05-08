@@ -17,7 +17,7 @@ import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 public class UserController {
 
     private final UserService userService;
-    private final UserProvider provider;
+    private final UserProvider userProvider;
 
     @PostMapping("/reg")
     @PermitAll
@@ -25,7 +25,7 @@ public class UserController {
         try {
             var token = httpRequest.getHeader("auth-token");
             return ResponseEntity.ok(userService.register(request,
-                    provider.trueUser(token, "Start User controller", "User registration WARNING")));
+                    userProvider.trueUser(token, "Start User controller", "User registration WARNING")));
         } catch (UnauthorizedUserException ex) {
             return ResponseEntity.ok(userService.register(request, null));
         }
