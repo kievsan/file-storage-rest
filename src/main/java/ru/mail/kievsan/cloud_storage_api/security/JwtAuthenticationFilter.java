@@ -22,9 +22,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    static final String jwtHeaderName = "auth-token";
-    static final String notRequiredTokenURLs = "/api/v1/user/reg, /api/v1/login, /api/v1/logout";
-
     private final JWTUserDetails jwtUserDetails;
 
     @Override
@@ -33,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws UnauthorizedUserException, ServletException, IOException {
 
-        final String jwt = request.getHeader(jwtHeaderName);
+        final String jwt = request.getHeader(SecuritySettings.JWT_HEADER_NAME);
         log.info(">--------------< Start JwtAuthenticationFilter.doFilterInternal() :  token  '{}'", jwtUserDetails.jwtPresent(jwt));
 
         if (jwt == null || jwt.isBlank()) {
@@ -55,9 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void shutDownIfRequiredTokenURL(String uri, String method) {
-        if (!notRequiredTokenURLs.contains(uri)) {
+        if (!SecuritySettings.FREE_ENTRY_POINTS.contains(uri)) {
             String service = String.format("'%s' %s request", uri, method);
-            String err = String.format(" no JWT header '%s'.", jwtHeaderName);
+            String err = String.format(" no JWT header '%s'.", SecuritySettings.JWT_HEADER_NAME);
             shutDown(new UnauthorizedUserException(err, null, null, service, "'JwtAuthenticationFilter'"));
         }
     }

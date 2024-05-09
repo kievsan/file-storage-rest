@@ -44,9 +44,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         // public endpoints:
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/v1/user/reg", "/api/v1/login", "/api/v1/logout")
-                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, SecuritySettings.FREE_ENTRY_POINTS).permitAll()
                         // private endpoints:
                         .anyRequest().authenticated()
                 );
