@@ -17,7 +17,7 @@ Content-Type: application/json
 ###
 
 # Регистрация учетной записи
-POST {{baseUrl}}/user/reg
+POST {{baseUrl}}/user
 auth-token:
 Content-Type: application/json
 
@@ -49,7 +49,7 @@ Content-Type: : application/json
 ###
 
 # Регистрация учетной записи администратора супер-админом
-POST {{baseUrl}}/user/reg
+POST {{baseUrl}}/user
 auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
 Content-Type: application/json
 

@@ -24,7 +24,7 @@ public class JWTUserDetails implements UserDetailsService {
     }
 
     public User loadUserByJWT(String jwt) throws UnauthorizedUserException {
-        log.info("  Start JWTUserDetails.loadUserByJWT(), jwt = '{}'", jwtPresent(jwt));
+        log.info("  Start JWTUserDetails.loadUserByJWT(), jwt = '{}'", presentJWT(jwt));
         String badJWTExceptionMsg = "Bad user auth token";
         String badJWTErrMsg = "loadUserByJWT(jwt) warn:  " + badJWTExceptionMsg;
         try {
@@ -42,8 +42,8 @@ public class JWTUserDetails implements UserDetailsService {
         return trueJWT;
     }
 
-    public final String jwtPresent(String jwt) {
-        return jwt == null || jwt.isBlank() ? "" : jwt.substring(0,20) + "...";
+    public final String presentJWT(String jwt) {
+        return jwt == null || jwt.isBlank() ? "" : jwt.substring(0,jwt.length()/10) + "...";
     }
 
 }

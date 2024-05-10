@@ -8,18 +8,19 @@ import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpResponse;
+import ru.mail.kievsan.cloud_storage_api.security.SecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@RequestMapping(SecuritySettings.USER_URI)
 public class UserController {
 
     private final UserService userService;
     private final UserProvider userProvider;
 
-    @PostMapping("/reg")
+    @PostMapping
     @PermitAll
     public ResponseEntity<SignUpResponse> register(@RequestBody SignUpRequest request, HttpServletRequest httpRequest) {
         try {

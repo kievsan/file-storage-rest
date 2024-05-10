@@ -1,5 +1,6 @@
 package ru.mail.kievsan.cloud_storage_api.security;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,8 +44,9 @@ public class SecurityConfig {
         // Set permissions on endpoints:
         http
                 .authorizeHttpRequests(authz -> authz
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         // public endpoints:
-                        .requestMatchers(HttpMethod.POST, SecuritySettings.FREE_ENTRY_POINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, SecuritySettings.POST_FREE_ENTRY_POINTS).permitAll()
                         // private endpoints:
                         .anyRequest().authenticated()
                 );

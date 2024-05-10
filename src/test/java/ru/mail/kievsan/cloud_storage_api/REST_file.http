@@ -6,7 +6,7 @@
 
 # Переименование файла:
 PUT {{baseUrl}}?filename=example1.txt
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0ODA2NTE0LCJleHAiOjE3MTQ4MDcxMTR9.PVLgeF469F2-BLIsnrykIv94kv9XdfILNX56fMTfI-B2uKtN2t4acRxNcGNcSYLJ
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0ODc4OTAzLCJleHAiOjE3MTQ4Nzk1MDN9.syyiuBUVBWE21XjUO9PM_Ca9_tBCU4lQ8VWplq1AmpAV54b6k_8e0olCmw_UGYK1
 Content-Type: application/json
 
 {
@@ -17,6 +17,6 @@ Content-Type: application/json
 
 # Удаление файла:
 DELETE {{baseUrl}}?filename=example2.txt
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0ODA3MjA3LCJleHAiOjE3MTQ4MDc4MDd9.bNf5cbQNd96Sd56a9tmiTmL8OHoQzKsmllFhaDZDKHhuPVjbM8jHGxozifefrj9O
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0ODc4OTAzLCJleHAiOjE3MTQ4Nzk1MDN9.syyiuBUVBWE21XjUO9PM_Ca9_tBCU4lQ8VWplq1AmpAV54b6k_8e0olCmw_UGYK1
 
 ###
