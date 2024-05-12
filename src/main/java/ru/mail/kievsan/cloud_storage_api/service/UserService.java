@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
@@ -22,7 +23,7 @@ public class UserService {
 
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
-    //
+
     public SignUpResponse register(SignUpRequest request, User owner) throws UserRegistrationException {
         Predicate<User> USER_IS_ADMIN = user-> user != null && user.isAccountNonLocked() && user.getRole() == Role.ADMIN;
         Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user) && "starter".equals(user.getNickname());
@@ -53,5 +54,17 @@ public class UserService {
             throw new UserRegistrationException(msg);
         }
         log.info("SUCCESS! {}", msg);
+    }
+
+    public SignUpResponse getUserById(Long id, User currentUser) throws UserNotFoundException {
+        User user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+        log.info("Success: got user {} ({}) by id={}. Current user {} ({}), {}", user.getUsername(), user.getNickname(), id,
+                currentUser.getUsername(), currentUser.getNickname(), currentUser.getAuthorities());
+        return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
+    }
+
+    public SignUpResponse getCurrentUser(User user) throws UserNotFoundException {
+        log.info("Success: got owner. User {} ({})", user.getUsername(), user.getNickname());
+        return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
     }
 }

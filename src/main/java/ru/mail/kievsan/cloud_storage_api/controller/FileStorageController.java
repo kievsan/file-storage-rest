@@ -47,8 +47,7 @@ public class FileStorageController {
         DeferredResult<ResponseEntity<?>> deferredResult = setDeferredResult(filename, "Upload");
         ForkJoinPool.commonPool().submit(() -> {
             service.uploadFile(filename, file, provider.trueUser(authToken,
-                    String.format("%s, upload file '%s'", header, filename),
-                    "Upload file error"));
+                    String.format("%s, upload file '%s'", header, filename),"Upload file error"));
             deferredResult.setResult(ResponseEntity.ok(HttpStatus.OK)
             );
         });

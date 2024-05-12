@@ -4,6 +4,7 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpRequest;
@@ -20,9 +21,10 @@ public class UserController {
     private final UserService userService;
     private final UserProvider userProvider;
 
-    @PostMapping
     @PermitAll
-    public ResponseEntity<SignUpResponse> register(@RequestBody SignUpRequest request, HttpServletRequest httpRequest) {
+    @PostMapping
+    public ResponseEntity<SignUpResponse> register(@RequestBody SignUpRequest request,
+                                                   HttpServletRequest httpRequest) {
         try {
             var token = httpRequest.getHeader("auth-token");
             return ResponseEntity.ok(userService.register(request,
@@ -30,5 +32,19 @@ public class UserController {
         } catch (UnauthorizedUserException ex) {
             return ResponseEntity.ok(userService.register(request, null));
         }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<SignUpResponse> getUser(@PathVariable Long id,
+                                                  @RequestHeader(name = "auth-token") String authToken) {
+        return ResponseEntity.ok(userService.getUserById(id,
+                userProvider.trueUser(authToken,"Start User controller", "Get User error")));
+    }
+
+    @GetMapping
+    public ResponseEntity<SignUpResponse> getOwner(@RequestHeader(name = "auth-token") String authToken) {
+        return ResponseEntity.ok(userService.getCurrentUser(userProvider.trueUser(authToken,
+                "Start User controller", "Get owner error")));
     }
 }

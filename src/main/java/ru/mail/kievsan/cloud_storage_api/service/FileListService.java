@@ -27,7 +27,7 @@ public class FileListService {
             var fileStream = fileRepo.findAllByUserOrderByFilename(user).stream();
             var limitStream = limit > 0 ? fileStream.limit(limit) : fileStream;
 
-            log.info("Success get file list. User {} ({})", user.getUsername(), user.getNickname());
+            log.info("Success: got file list. User {} ({})", user.getUsername(), user.getNickname());
 
             return limitStream.map(file -> new FileListResponse(file.getFilename(), file.getSize()))
                     .collect(Collectors.toList());
