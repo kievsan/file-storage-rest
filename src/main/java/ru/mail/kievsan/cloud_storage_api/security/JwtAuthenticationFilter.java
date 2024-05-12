@@ -33,8 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws UnauthorizedUserException, ServletException, IOException {
 
-        String uri = request.getRequestURI();
-        String method = request.getMethod();
+        final String uri = request.getRequestURI(), method = request.getMethod();
         final String jwt = request.getHeader(SecuritySettings.JWT_HEADER_NAME);
 
         log.info("{}< {} :  {} >----- Start {},  token  '{}'", LogUtils.prefix, uri, method, className, details.presentJWT(jwt));
@@ -45,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             shutDown(new UnauthorizedUserException(err, null, null, service, className));
         } else {
             try {
-                UserDetails user = details.loadUserByJWT(jwt);
+                final UserDetails user = details.loadUserByJWT(jwt);
                 log.info("     userDetails:  '{}', {}", user.getUsername(), user.getAuthorities());
                 var authToken = new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -61,13 +60,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        final String uri = request.getRequestURI(), method = request.getMethod();
         final String jwt = request.getHeader(SecuritySettings.JWT_HEADER_NAME);
-        final String uri = request.getRequestURI();
         return SecuritySettings.LOGIN_URI.equals(uri)
                 || (jwt == null || jwt.isBlank())
-                && SecuritySettings.POST_FREE_ENTRY_POINTS.contains(uri)
-                && "POST".equals(request.getMethod());
+                && SecuritySettings.POST_FREE_ENTRY_POINTS.contains(uri) && "POST".equals(method);
     }
 
     private void shutDown(RuntimeException ex) throws UnauthorizedUserException {

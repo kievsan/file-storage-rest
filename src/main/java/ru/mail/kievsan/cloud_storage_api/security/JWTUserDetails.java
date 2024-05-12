@@ -2,6 +2,7 @@ package ru.mail.kievsan.cloud_storage_api.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,11 @@ public class JWTUserDetails implements UserDetailsService {
 
     public final String presentJWT(String jwt) {
         return jwt == null || jwt.isBlank() ? "" : jwt.substring(0,jwt.length()/10) + "...";
+    }
+
+    public final String presentAuthenticated() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return String.format("user  %s, %s", auth.getName(), auth.getAuthorities());
     }
 
 }

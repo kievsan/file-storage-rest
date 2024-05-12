@@ -2,7 +2,6 @@ package ru.mail.kievsan.cloud_storage_api.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
@@ -31,7 +30,6 @@ public class UserProvider {
     }
 
     public void logg(String msg) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info(" {}:  user  {}, {}", msg, auth.getName(), auth.getAuthorities());
+        log.info(" {}:  {}", msg, userDetails.presentAuthenticated());
     }
 }

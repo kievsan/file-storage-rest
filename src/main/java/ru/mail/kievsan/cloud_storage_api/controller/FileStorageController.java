@@ -1,21 +1,28 @@
 package ru.mail.kievsan.cloud_storage_api.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
+import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file.EditFileNameRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
+import ru.mail.kievsan.cloud_storage_api.security.SecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
+
+import java.util.concurrent.ForkJoinPool;
 
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/file")
+@RequestMapping(SecuritySettings.FILE_URI)
+@Slf4j
 public class FileStorageController {
 
     private final FileStorageService service;
@@ -52,14 +59,45 @@ public class FileStorageController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+//    @GetMapping(produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<?> downloadFile(@RequestHeader("auth-token") String authToken,
+//                                          @RequestParam("filename") String filename) {
+//        File file = service.downloadFile(filename, provider.trueUser(authToken,
+//                String.format("----------download resource----------\n %s, download file '%s'", header, filename),
+//                "Download file error"));
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+//                .body(file.getContent());
+//    }
+
     @GetMapping(produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> downloadFile(@RequestHeader("auth-token") String authToken,
-                                          @RequestParam("filename") String filename) {
-        File file = service.downloadFile(filename, provider.trueUser(authToken,
-                String.format("----------download resource----------\n %s, download file '%s'", header, filename),
-                "Download file error"));
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                .body(file.getContent());
+    public DeferredResult<ResponseEntity<?>> downloadFile(@RequestHeader("auth-token") String authToken,
+                                                          @RequestParam("filename") String filename) {
+        DeferredResult<ResponseEntity<?>> deferredResult = setDeferredResult(filename);
+        ForkJoinPool.commonPool().submit(() -> {
+            File file = service.downloadFile(filename, provider.trueUser(authToken,
+                        String.format("----------download resource----------\n %s, download file '%s'", header, filename),
+                        "Download file error"
+            ));
+            deferredResult.setResult(ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                    .body(file.getContent())
+            );
+        });
+        return deferredResult;
+    }
+
+    private DeferredResult<ResponseEntity<?>> setDeferredResult(String filename) {
+        DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(5000L);
+        deferredResult.onCompletion(() -> provider.logg("Download file '" + filename + "' complete"));
+        deferredResult.onTimeout(() -> {
+            String errMsg = "Download file '" + filename + "' timed out";
+            provider.logg(errMsg);
+            deferredResult.setErrorResult(
+                    ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(new ErrResponse("Request timeout occurred. " + errMsg, 0))
+            );
+        });
+        return deferredResult;
     }
 }

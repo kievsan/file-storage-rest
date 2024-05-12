@@ -8,4 +8,5 @@ public interface SecuritySettings {
     String LOGIN_URI = BASE_URI + "/login";
     String LOGOUT_URI = BASE_URI + "/logout";
     String POST_FREE_ENTRY_POINTS = String.format("%s, %s, %s", SIGN_UP_URI, LOGIN_URI, LOGOUT_URI);
+    String FILE_URI = BASE_URI + "/file";
 }
