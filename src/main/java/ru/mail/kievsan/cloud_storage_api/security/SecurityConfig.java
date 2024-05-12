@@ -18,6 +18,7 @@ import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter
 import ru.mail.kievsan.cloud_storage_api.security.filters.FileStorageFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
+import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -50,7 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         // public endpoints:
-                        .requestMatchers(HttpMethod.POST, SecuritySettings.POST_FREE_ENTRY_POINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, SIGN_UP_URI, LOGIN_URI, LOGOUT_URI).permitAll()
                         // private endpoints:
                         .anyRequest().authenticated()
                 );
@@ -62,7 +63,7 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .addLogoutHandler(clearSiteData)
-                        .logoutSuccessUrl("/api/v1/login?logout")
+                        .logoutSuccessUrl(LOGIN_URI + "?logout")
 //                        .logoutUrl("/api/v1/logout").permitAll()
 //                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/v1/logout")).permitAll()
                 );
@@ -71,7 +72,7 @@ public class SecurityConfig {
                 .authenticationProvider(authProvider)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authEntryPoint)
-                        .accessDeniedPage("/api/v1/login")
+                        .accessDeniedPage(LOGIN_URI)
                 );
         return http.build();
     }

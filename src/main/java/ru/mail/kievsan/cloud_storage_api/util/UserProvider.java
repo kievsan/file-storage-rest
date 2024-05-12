@@ -12,7 +12,7 @@ import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 @RequiredArgsConstructor
 public class UserProvider {
 
-    JWTUserDetails userDetails;
+    private final JWTUserDetails userDetails;
 
     public User trueUser(String jwt, String logMsg, String errMsg) throws UnauthorizedUserException {
         logg(logMsg);
