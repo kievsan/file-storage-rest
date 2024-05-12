@@ -30,14 +30,29 @@ public class FileStorageController {
 
     private final String header = "Start File controller";
 
-    @PostMapping()
-    public ResponseEntity<?> uploadFile(@RequestHeader("auth-token") String authToken,
-                                        @RequestParam("filename") String filename,
-                                        @RequestBody MultipartFile file) {
-        service.uploadFile(filename, file, provider.trueUser(authToken,
-                String.format("%s, upload file '%s'", header, filename),
-                "Upload file error"));
-        return ResponseEntity.ok(HttpStatus.OK);
+//    @PostMapping()
+//    public ResponseEntity<?> uploadFile(@RequestHeader("auth-token") String authToken,
+//                                        @RequestParam("filename") String filename,
+//                                        @RequestBody MultipartFile file) {
+//        service.uploadFile(filename, file, provider.trueUser(authToken,
+//                String.format("%s, upload file '%s'", header, filename),
+//                "Upload file error"));
+//        return ResponseEntity.ok(HttpStatus.OK);
+//    }
+
+    @PostMapping
+    public DeferredResult<ResponseEntity<?>> uploadFile(@RequestHeader("auth-token") String authToken,
+                                                        @RequestParam("filename") String filename,
+                                                        @RequestBody MultipartFile file) {
+        DeferredResult<ResponseEntity<?>> deferredResult = setDeferredResult(filename, "Upload");
+        ForkJoinPool.commonPool().submit(() -> {
+            service.uploadFile(filename, file, provider.trueUser(authToken,
+                    String.format("%s, upload file '%s'", header, filename),
+                    "Upload file error"));
+            deferredResult.setResult(ResponseEntity.ok(HttpStatus.OK)
+            );
+        });
+        return deferredResult;
     }
 
     @PutMapping()
@@ -73,25 +88,23 @@ public class FileStorageController {
     @GetMapping(produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DeferredResult<ResponseEntity<?>> downloadFile(@RequestHeader("auth-token") String authToken,
                                                           @RequestParam("filename") String filename) {
-        DeferredResult<ResponseEntity<?>> deferredResult = setDeferredResult(filename);
+        DeferredResult<ResponseEntity<?>> deferredResult = setDeferredResult(filename, "Download");
         ForkJoinPool.commonPool().submit(() -> {
             File file = service.downloadFile(filename, provider.trueUser(authToken,
                         String.format("----------download resource----------\n %s, download file '%s'", header, filename),
-                        "Download file error"
-            ));
+                        "Download file error"));
             deferredResult.setResult(ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                    .body(file.getContent())
-            );
+                    .body(file.getContent()));
         });
         return deferredResult;
     }
 
-    private DeferredResult<ResponseEntity<?>> setDeferredResult(String filename) {
+    private DeferredResult<ResponseEntity<?>> setDeferredResult(String filename, String serviceTitle) {
         DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(5000L);
-        deferredResult.onCompletion(() -> provider.logg("Download file '" + filename + "' complete"));
+        deferredResult.onCompletion(() -> provider.logg(serviceTitle + " file '" + filename + "' complete"));
         deferredResult.onTimeout(() -> {
-            String errMsg = "Download file '" + filename + "' timed out";
+            String errMsg = serviceTitle + " file '" + filename + "' timed out";
             provider.logg(errMsg);
             deferredResult.setErrorResult(
                     ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
