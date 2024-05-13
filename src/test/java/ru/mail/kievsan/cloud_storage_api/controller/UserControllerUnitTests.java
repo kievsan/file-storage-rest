@@ -3,11 +3,13 @@ package ru.mail.kievsan.cloud_storage_api.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,6 +25,7 @@ import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 public class UserControllerUnitTests {
 
     private static long suiteStartTime;
+    private static String BASE_URL;
 
     @MockBean
     UserService userService;
@@ -32,12 +35,13 @@ public class UserControllerUnitTests {
     JWTUserDetails userDetails;
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-    private User testUser;
-    private SignUpResponse testSignUpResponse;
+    @Value("${server.port}")
+    String port;
 
-    private final String URI = "/api/v1/user";
+    User testUser;
+    SignUpResponse testSignUpResponse;
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -53,6 +57,7 @@ public class UserControllerUnitTests {
     @BeforeEach
     public void runTest() {
         System.out.println("Starting new test " + this);
+        BASE_URL = "http://localhost:" + port;
         testUser = newUser();
         testSignUpResponse = newSignUpResponse();
     }
@@ -67,7 +72,7 @@ public class UserControllerUnitTests {
     public void register() throws Exception {
         Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any(User.class))).thenReturn(testSignUpResponse);
 
-        mockMvc.perform(post(URI))
+        mockMvc.perform(post(BASE_URL + SIGN_UP_URI))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname", Matchers.is("testuser")))
                 .andExpect(jsonPath("$.email", Matchers.is("testuser@mail\\.ru")))
