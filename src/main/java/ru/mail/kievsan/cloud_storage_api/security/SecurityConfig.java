@@ -15,7 +15,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
 import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
-import ru.mail.kievsan.cloud_storage_api.security.filters.FileStorageFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
@@ -26,7 +25,6 @@ import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
-    private final FileStorageFilter fileStorageFilter;
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authProvider;
     private final JwtAuthenticationEntryPoint authEntryPoint;
@@ -39,8 +37,6 @@ public class SecurityConfig {
 
         // Add JWT token filter:
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        // Add file storage filter:
-        http.addFilterBefore(fileStorageFilter, UsernamePasswordAuthenticationFilter.class);
         // Enable CORS and disable CSRF:
         http.cors(withDefaults()).csrf(AbstractHttpConfigurer::disable);
         // Set session management to stateless:

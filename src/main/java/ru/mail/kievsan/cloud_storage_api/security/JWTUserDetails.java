@@ -51,5 +51,4 @@ public class JWTUserDetails implements UserDetailsService {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         return String.format("user  %s, %s", auth.getName(), auth.getAuthorities());
     }
-
 }

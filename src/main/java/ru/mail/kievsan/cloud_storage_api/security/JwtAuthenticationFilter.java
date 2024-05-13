@@ -56,7 +56,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
-        log.info("{} Finish {} :  token  '{}'", LogUtils.prefix, className, details.presentJWT(jwt));
+        log.info("{} Finish {} :  {},  token  '{}'", LogUtils.prefix, className,
+                details.presentAuthenticated(), details.presentJWT(jwt));
     }
 
     @Override
