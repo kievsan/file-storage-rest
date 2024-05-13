@@ -1,0 +1,33 @@
+# примеры API-запросов
+
+ @baseUrl = http://localhost:5055/api/v1
+
+###
+
+# Регистрация учетной записи
+POST {{baseUrl}}/user
+auth-token:
+Content-Type: application/json
+
+{
+  "nickname": "king" ,
+  "email": "knhel7@gmail.com" ,
+  "password": "123456" ,
+  "role": "USER"
+}
+
+###
+
+# Регистрация учетной записи администратора супер-админом
+POST {{baseUrl}}/user
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NTk5MTQwLCJleHAiOjE3MTU1OTk3NDB9.Ydo2zbq3LQy-CMsgV5CqcLshf_FIm4EkdHlx5VR5k7_aIqGfQdF0CtdXZ6YUe36q
+Content-Type: application/json
+
+{
+  "nickname": "king2" ,
+  "email": "knhel77@gmail.com" ,
+  "password": "1234567" ,
+  "role": "ADMIN"
+}
+
+###

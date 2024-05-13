@@ -16,20 +16,6 @@ Content-Type: application/json
 
 ###
 
-# Регистрация учетной записи
-POST {{baseUrl}}/user
-auth-token:
-Content-Type: application/json
-
-{
-  "nickname": "king" ,
-  "email": "knhel7@gmail.com" ,
-  "password": "123456" ,
-  "role": "USER"
-}
-
-###
-
 # Аутентификация
 POST {{baseUrl}}/login
 Content-Type: application/json
@@ -37,27 +23,6 @@ Content-Type: application/json
 {
   "login": "knhel7@gmail.com" ,
   "password": "123456"
-}
-
-###
-
-# Выход из учетной записи
-POST {{baseUrl}}/logout
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
-Content-Type: : application/json
-
-###
-
-# Регистрация учетной записи администратора супер-админом
-POST {{baseUrl}}/user
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
-Content-Type: application/json
-
-{
-  "nickname": "king2" ,
-  "email": "knhel77@gmail.com" ,
-  "password": "1234567" ,
-  "role": "ADMIN"
 }
 
 ###
@@ -70,5 +35,12 @@ Content-Type: application/json
   "login": "knhel77@gmail.com" ,
   "password": "1234567"
 }
+
+###
+
+# Выход из учетной записи
+POST {{baseUrl}}/logout
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
+Content-Type: : application/json
 
 ###

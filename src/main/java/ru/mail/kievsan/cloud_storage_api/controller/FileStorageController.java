@@ -51,6 +51,7 @@ public class FileStorageController {
 //            deferredResult.setResult(ResponseEntity.ok(HttpStatus.OK)
 //            );
 //        });
+//        provider.logg(" Upload file '" + filename + "' deferred...");
 //        return deferredResult;
 //    }
 
@@ -101,7 +102,7 @@ public class FileStorageController {
 //
 //    private DeferredResult<ResponseEntity<?>> setDeferredResult(String filename, String serviceTitle) {
 //        DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(5000L);
-//        deferredResult.onCompletion(() -> provider.logg(serviceTitle + " file '" + filename + "' complete"));
+//        deferredResult.onCompletion(() -> provider.logg(" " + serviceTitle + " file '" + filename + "' complete"));
 //        deferredResult.onTimeout(() -> {
 //            String errMsg = serviceTitle + " file '" + filename + "' timed out";
 //            provider.logg(errMsg);
@@ -110,6 +111,7 @@ public class FileStorageController {
 //                            .body(new ErrResponse("Request timeout occurred. " + errMsg, 0))
 //            );
 //        });
+//        provider.logg(" " + serviceTitle + " file '" + filename + "', deferred result was created");
 //        return deferredResult;
 //    }
 }
