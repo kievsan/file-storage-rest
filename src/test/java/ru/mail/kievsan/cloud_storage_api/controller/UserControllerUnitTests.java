@@ -15,7 +15,9 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
+import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
+import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @WebMvcTest(UserController.class)
 public class UserControllerUnitTests {
@@ -24,6 +26,10 @@ public class UserControllerUnitTests {
 
     @MockBean
     UserService userService;
+    @MockBean
+    UserProvider userProvider;
+    @MockBean
+    JWTUserDetails userDetails;
 
     @Autowired
     MockMvc mockMvc;
@@ -31,7 +37,7 @@ public class UserControllerUnitTests {
     private User testUser;
     private SignUpResponse testSignUpResponse;
 
-    private final String baseURI = "/api/v1/user";
+    private final String URI = "/api/v1/user";
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -59,13 +65,14 @@ public class UserControllerUnitTests {
 
     @Test
     public void register() throws Exception {
-        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), null)).thenReturn(testSignUpResponse);
+        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any(User.class))).thenReturn(testSignUpResponse);
 
-        mockMvc.perform(post(baseURI + "/reg"))
+        mockMvc.perform(post(URI))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname", Matchers.is("testuser")))
-                .andExpect(jsonPath("$.email", Matchers.is("testuser@mail.ru")))
-                .andExpect(jsonPath("$.role", Matchers.is("Role.USER")));
+                .andExpect(jsonPath("$.email", Matchers.is("testuser@mail\\.ru")))
+                .andExpect(jsonPath("$.role", Matchers.is(Role.USER)))
+        ;
     }
 
     private User newUser() {
