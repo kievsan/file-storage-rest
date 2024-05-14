@@ -13,21 +13,25 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
+import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @WebMvcTest(UserController.class)
+@Import({SecurityConfig.class, AuthConfig.class})
 public class UserControllerUnitTests {
 
     private static long suiteStartTime;
-//    private static String BASE_URL;
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,12 +41,11 @@ public class UserControllerUnitTests {
     @MockBean
     UserService userService;
     @MockBean
+    JwtAuthenticationEntryPoint entryPoint;
+    @MockBean
     UserProvider userProvider;
     @MockBean
     JWTUserDetails userDetails;
-
-//    @Value("${server.port}")
-//    String port;
 
     User testUser;
     SignUpRequest testRequest;
@@ -62,7 +65,6 @@ public class UserControllerUnitTests {
     @BeforeEach
     public void runTest() {
         System.out.println("Starting new test " + this);
-//        BASE_URL = "http://localhost:" + port;
         testUser = newUser();
         testRequest = newSignUpRequest();
         testResponse = newSignUpResponse();
@@ -83,6 +85,7 @@ public class UserControllerUnitTests {
                         .content(mapper.writeValueAsString(testRequest))
                         .with(csrf())
                 )
+//                .andExpect(status().isUnauthorized())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname", Matchers.is(testUser.getNickname())))
                 .andExpect(jsonPath("$.email", Matchers.is(testUser.getEmail())))
