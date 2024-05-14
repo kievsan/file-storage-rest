@@ -3,6 +3,7 @@ package ru.mail.kievsan.cloud_storage_api.controller;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +47,20 @@ public class UserController {
     public ResponseEntity<SignUpResponse> getOwner(@RequestHeader(name = "auth-token") String authToken) {
         return ResponseEntity.ok(userService.getCurrentUser(userProvider.trueUser(authToken,
                 "Start User controller", "Get owner error")));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delUser(@PathVariable Long id,
+                                                  @RequestHeader(name = "auth-token") String authToken) {
+        userService.delUserById(id,
+                userProvider.trueUser(authToken,"Start User controller", "Del User error"));
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> delOwner(@RequestHeader(name = "auth-token") String authToken) {
+        return ResponseEntity.ok(userService.getCurrentUser(userProvider.trueUser(authToken,
+                "Start User controller", "Del owner error")));
     }
 }

@@ -35,9 +35,4 @@ public class AuthConfig {
         return new BCryptPasswordEncoder();
 //        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
-//    @Bean
-//    public UserProvider userProvider() {
-//        return new UserProvider();
-//    }
 }

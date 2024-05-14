@@ -11,7 +11,9 @@ import java.util.Optional;
 public interface UserJPARepo extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
+
     boolean existsByEmail(String email);
+    boolean existsById(Long id);
 
     @Transactional
     void deleteByEmail(String username);

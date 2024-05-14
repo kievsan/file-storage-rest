@@ -35,8 +35,7 @@ public class FileStorageController {
                                         @RequestParam("filename") String filename,
                                         @RequestBody MultipartFile file) {
         service.uploadFile(filename, file, provider.trueUser(authToken,
-                String.format("%s, upload file '%s'", header, filename),
-                "Upload file error"));
+                "%s, upload file '%s'".formatted(header, filename), "Upload file error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -60,7 +59,7 @@ public class FileStorageController {
                                           @RequestParam("filename") String filename,
                                           @RequestBody EditFileNameRequest request) {
         service.editFileName(filename, request.getFilename(), provider.trueUser(authToken,
-                String.format("%s, edit file name '%s' -> '%s'", header, filename, request.getFilename()),
+                "%s, edit file name '%s' -> '%s'".formatted(header, filename, request.getFilename()),
                 "Edit file name error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -69,8 +68,7 @@ public class FileStorageController {
     public ResponseEntity<?> deleteFileName(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename) {
         service.deleteFile(filename, provider.trueUser(authToken,
-                String.format("%s, delete file '%s'", header, filename),
-                "Delete file error"));
+                "%s, delete file '%s'".formatted(header, filename), "Delete file error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -78,7 +76,7 @@ public class FileStorageController {
     public ResponseEntity<?> downloadFile(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename) {
         File file = service.downloadFile(filename, provider.trueUser(authToken,
-                String.format("----------download resource----------\n %s, download file '%s'", header, filename),
+                "----------download resource----------\n %s, download file '%s'".formatted(header, filename),
                 "Download file error"));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")

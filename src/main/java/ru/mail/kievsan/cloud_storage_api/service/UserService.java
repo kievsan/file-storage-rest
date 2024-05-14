@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.mail.kievsan.cloud_storage_api.exception.NoRightsException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
@@ -66,5 +67,23 @@ public class UserService {
     public SignUpResponse getCurrentUser(User user) throws UserNotFoundException {
         log.info("Success: got owner. User {} ({})", user.getUsername(), user.getNickname());
         return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
+    }
+
+    @Transactional
+    public void delUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
+        if (!currentUser.getAuthorities().contains(Role.ADMIN)) {
+            throw new NoRightsException("You do not have enough rights to delete a user if you are not an Admin",
+                    null, "USER", "'/user'", "'delete user service'");
+        }
+        var user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+        userRepo.deleteById(id);
+        log.info("Success: deleted user '{}' by id={}. Current user {} ({}), {}", user.getNickname(), id,
+                currentUser.getUsername(), currentUser.getNickname(), currentUser.getAuthorities());
+    }
+
+    @Transactional
+    public void delCurrentUser(User user) throws UserNotFoundException {
+        userRepo.delete(user);
+        log.info("Success: deleted owner, user {} ({})", user.getUsername(), user.getNickname());
     }
 }
