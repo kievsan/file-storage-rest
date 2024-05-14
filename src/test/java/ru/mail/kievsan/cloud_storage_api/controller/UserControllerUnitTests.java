@@ -78,7 +78,7 @@ public class UserControllerUnitTests {
 
     @Test
     public void register() throws Exception {
-        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any(User.class))).thenReturn(testResponse);
+        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse);
 
         mockMvc.perform(post(SIGN_UP_URI)
                         .contentType(MediaType.APPLICATION_JSON)
