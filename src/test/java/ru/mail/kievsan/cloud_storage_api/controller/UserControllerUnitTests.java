@@ -66,18 +66,18 @@ public class UserControllerUnitTests {
     public void runTest() {
         System.out.println("Starting new test " + this);
         testUser = newUser();
-        testRequest = newSignUpRequest();
-        testResponse = newSignUpResponse();
     }
 
     @AfterEach
     public void finishTest() {
         testUser = null;
-        testResponse = null;
     }
 
     @Test
     public void register() throws Exception {
+        testRequest = newSignUpRequest();
+        testResponse = newSignUpResponse();
+
         Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse);
 
         mockMvc.perform(post(SIGN_UP_URI)
@@ -91,6 +91,9 @@ public class UserControllerUnitTests {
                 .andExpect(jsonPath("$.email", Matchers.is(testUser.getEmail())))
                 .andExpect(jsonPath("$.role", Matchers.is(testUser.getRole().toString())))
         ;
+
+        testRequest = null;
+        testResponse = null;
     }
 
     private User newUser() {
