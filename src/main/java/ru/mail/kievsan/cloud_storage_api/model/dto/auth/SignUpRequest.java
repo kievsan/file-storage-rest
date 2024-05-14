@@ -14,7 +14,7 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 @AllArgsConstructor
 public class SignUpRequest { // Запрос на регистрацию
 
-    private final int max = 30;
+    static final int max = 30;
 
     @Size(min = 3, max = max, message = "nickname: от 3 до " + max + " символов")
     @NotBlank(message = "nickname не должен быть пустым!")
