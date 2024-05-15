@@ -49,6 +49,8 @@ public class SecurityConfig {
                         // public endpoints:
                         .requestMatchers(HttpMethod.POST, SIGN_UP_URI, LOGIN_URI, LOGOUT_URI).permitAll()
                         // private endpoints:
+                        .requestMatchers(HttpMethod.GET, USER_URI + "/*/**").hasAnyAuthority("ADMIN") // .hasAnyRole("ADMIN") - не работает???
+                        .requestMatchers(HttpMethod.DELETE, USER_URI + "/*/**").hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated()
                 );
         http

@@ -19,7 +19,7 @@ Content-Type: application/json
 
 # Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQ3MDE5LCJleHAiOjE3MTU3NDc2MTl9.8__9l_7Ayul3vtkOwTuLj3dEgvjQhlX9ZVirVIxB72aV3-zlzuFzQamf-5ggoCRd
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1Nzc1Nzk4LCJleHAiOjE3MTU3NzYzOTh9.YknO-ap-B2yIC5CxBvtdAxK3avHjmBEkMybDANY-qPgJWpYmMNjYpgAzAPkLMNAH
 Content-Type: application/json
 
 {
@@ -45,14 +45,14 @@ Content-Type: application/json
 
 # Получить свою учетную запись
 GET {{baseUrl}}/user
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQyNjY3LCJleHAiOjE3MTU3NDMyNjd9.e1UHJlvyQyFK_cpP_gW_LqxOI8JhXv8eMaNfda9niS6gStHdtj0AqoK9Dz5oaIKM
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDdAZ21haWwuY29tIiwiaWF0IjoxNzE1Nzc3MDY3LCJleHAiOjE3MTU3Nzc2Njd9.FC_6_t-Hme7nfS_f7YyB52s4ERURWzJ3X2TaxiLvb_Gf0d9z9VkaWz2B1HtLHvh7
 Content-Type: application/json
 
 ###
 
 # Получить учетную запись по id
 GET {{baseUrl}}/user/2
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQ3MDE5LCJleHAiOjE3MTU3NDc2MTl9.8__9l_7Ayul3vtkOwTuLj3dEgvjQhlX9ZVirVIxB72aV3-zlzuFzQamf-5ggoCRd
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1Nzc3NzQ2LCJleHAiOjE3MTU3NzgzNDZ9.34JI2UhmgSprLtk6GLD8-yELGBkp6J0zNbZuhvszSVTs73L0IgXE645W9R9nk1qb
 Content-Type: application/json
 
 ###
@@ -66,7 +66,7 @@ Content-Type: application/json
 
 # Удалить учетную запись по id
 DELETE {{baseUrl}}/user/2
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQ3MDE5LCJleHAiOjE3MTU3NDc2MTl9.8__9l_7Ayul3vtkOwTuLj3dEgvjQhlX9ZVirVIxB72aV3-zlzuFzQamf-5ggoCRd
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1Nzc3NzQ2LCJleHAiOjE3MTU3NzgzNDZ9.34JI2UhmgSprLtk6GLD8-yELGBkp6J0zNbZuhvszSVTs73L0IgXE645W9R9nk1qb
 Content-Type: application/json
 
 ###
