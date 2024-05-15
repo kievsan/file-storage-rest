@@ -2,6 +2,7 @@ package ru.mail.kievsan.cloud_storage_api.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
@@ -95,13 +96,15 @@ public class UserControllerUnitTests {
     }
 
     @Test
-    public void update() throws Exception {
+    public void edit() throws Exception {
         var testRequest = new UpdateRequest("new_" + testUser.getEmail(), "new_" + testUser.getPassword());
         testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
 
+        // ????
+
         Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse);
 
-        mockMvc.perform(post(USER_URI)
+        mockMvc.perform(put(USER_URI).header("auth-token", "......")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(testRequest))
                         .with(csrf())
