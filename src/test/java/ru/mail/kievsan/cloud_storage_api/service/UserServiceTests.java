@@ -55,6 +55,7 @@ public class UserServiceTests {
     public void testSignUpIntoDB() {
         userService.signup(testUser);
         User newUser = userRepo.findById(testUser.getId()).orElse(null);
+
         assertNotNull(newUser);
         assertEquals(testUser.getUsername(), newUser.getUsername());
     }

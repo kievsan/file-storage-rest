@@ -2,6 +2,7 @@ package ru.mail.kievsan.cloud_storage_api.controller;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class UserController {
 //    @RolesAllowed({"ROLE_ADMIN"})  // блокирует любых пользователей ??????????!!! ПОЧЕМУ с Role.ADMIN тоже блокирует?
 //    @Secured({"ROLE_ADMIN"})      // блокирует любых пользователей ??????????!!!
     @GetMapping("/{id}")
-    public ResponseEntity<SignUpResponse> getUser(@PathVariable Long id,
+    public ResponseEntity<SignUpResponse> getUser(@PathVariable @Positive Long id,
                                                   @RequestHeader(name = "auth-token") String authToken) {
         return ResponseEntity.ok(service.getUserById(id,
                 userProvider.trueUser(authToken,logTitle, "Get User error")));
@@ -64,7 +65,7 @@ public class UserController {
 
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")  // блокирует любых пользователей ??????????!!!
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delUser(@PathVariable Long id, @RequestHeader(name = "auth-token") String authToken) {
+    public ResponseEntity<?> delUser(@PathVariable @Positive Long id, @RequestHeader(name = "auth-token") String authToken) {
         service.delUserById(id, userProvider.trueUser(authToken,logTitle, "Del User error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
