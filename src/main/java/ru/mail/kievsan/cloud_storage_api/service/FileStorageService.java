@@ -1,6 +1,5 @@
 package ru.mail.kievsan.cloud_storage_api.service;
 
-import io.jsonwebtoken.io.Decoders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,9 +21,9 @@ import java.util.Objects;
 @Slf4j
 public class FileStorageService {
 
-    private final FileJPARepo fileRepo;
+    static final String logErrTitle = "[FILE service error]";
 
-    private final String header = "[FILE service error]";
+    private final FileJPARepo fileRepo;
 
     public void uploadFile(String filename, MultipartFile file, User user) {
         try {
@@ -36,25 +35,25 @@ public class FileStorageService {
             log.info("[User {}] Success upload file '{}'. ", user.getUsername(), filename);
         } catch (IOException | NullPointerException e) {
             String msg = String.format("User %s: error input data, upload file '%s'", user.getUsername(), filename);
-            log.error("{} {}", header, msg);
-            throw new InputDataException(msg, null, null, null, "'uploadFile service'");
+            log.error("{} {}", logErrTitle, msg);
+            throw new InputDataException(msg, null, "FILE", "'/file'", "'uploadFile service'");
         }
     }
 
     @Transactional
     public void editFileName(String filename, String newFileName, User user) {
-        if (newFileName == null || newFileName.isEmpty()) {
+        if (newFileName == null || newFileName.isBlank()) {
             String msg = String.format("User %s: new file name is null or empty, storage file '%s'",
                     user.getUsername(), filename);
-            log.error("{} {}", header, msg);
-            throw new InputDataException(msg, null, null, null, "'editFileName service'");
+            log.error("{} {}", logErrTitle, msg);
+            throw new InputDataException(msg, null, "FILE", "'/file'", "'editFileName service'");
         }
         newFileName = newFileName.trim();
         if (!Objects.equals(filename, newFileName)) {
-            String errMsg = String.format("User %s: file not found, filename had no edited '%s' -> '%s'",
+            String errMsg = String.format("User %s: filename had no edited '%s' -> '%s'",
                     user.getUsername(), filename, newFileName);
             checkForTheFile(false, filename, user, errMsg,
-                    new InputDataException(errMsg, null, null, null, "'editFileName service'")
+                    new InputDataException(errMsg, null, "FILE", "'/file'", "'editFileName service'")
             );
             fileRepo.editFileNameByUser(user, filename, newFileName);
 
@@ -70,7 +69,7 @@ public class FileStorageService {
     public void deleteFile(String filename, User user) {
         String errMsg = String.format("User %s: delete file error, file not found '%s'", user.getUsername(), filename);
         checkForTheFile(false, filename, user, errMsg,
-                new InputDataException(errMsg, null, null, null, "'deleteFile service'")
+                new InputDataException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
         );
         fileRepo.deleteByUserAndFilename(user, filename);
 
@@ -84,7 +83,7 @@ public class FileStorageService {
     public File downloadFile(String filename, User user) {
         String errMsg = String.format("User %s: download file error, file not found '%s'", user.getUsername(), filename);
         File file = checkForTheFile(false, filename, user, errMsg,
-                new InputDataException(errMsg, null, null, null, "'downloadFile service'")
+                new InputDataException(errMsg, null, "FILE", "'/file'", "'downloadFile service'")
         );
         log.info("[User {}] Success download file '{}'", user.getUsername(), filename);
         return file;
@@ -93,7 +92,7 @@ public class FileStorageService {
     public File checkForTheFile(boolean exists, String filename, User user, String errMsg, RuntimeException exception) {
         File file = fileRepo.findByUserAndFilename(user, filename);
         if (Objects.equals(file != null, exists)) {
-            log.error("{} {}", header, errMsg);
+            log.error("{} {}", logErrTitle, errMsg);
             throw exception;
         }
         return file;

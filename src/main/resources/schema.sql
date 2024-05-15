@@ -2,10 +2,10 @@ create schema if not exists storage authorization postgres;
 
 create table if not exists storage.users (
     id serial primary key ,
-    nickname varchar(30) unique ,
-    email varchar(30) unique ,
-    password varchar(30) not null ,
-    role varchar(30) not null
+    nickname varchar(25) unique ,
+    email varchar(100) unique ,
+    password varchar(100) not null ,
+    role varchar(25) not null
 );
 create table if not exists storage.files (
     id serial primary key ,

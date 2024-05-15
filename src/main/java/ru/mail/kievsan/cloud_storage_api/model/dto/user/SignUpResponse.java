@@ -1,4 +1,4 @@
-package ru.mail.kievsan.cloud_storage_api.model.dto.auth;
+package ru.mail.kievsan.cloud_storage_api.model.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

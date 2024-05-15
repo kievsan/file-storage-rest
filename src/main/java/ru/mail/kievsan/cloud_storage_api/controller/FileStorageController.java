@@ -7,16 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
-import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file.EditFileNameRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.security.SecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
-
-import java.util.concurrent.ForkJoinPool;
 
 @CrossOrigin
 @RestController
@@ -28,14 +24,14 @@ public class FileStorageController {
     private final FileStorageService service;
     private final UserProvider provider;
 
-    private final String header = "Start File controller";
+    private final String logTitle = "Start File controller";
 
     @PostMapping()
     public ResponseEntity<?> uploadFile(@RequestHeader("auth-token") String authToken,
                                         @RequestParam("filename") String filename,
                                         @RequestBody MultipartFile file) {
         service.uploadFile(filename, file, provider.trueUser(authToken,
-                "%s, upload file '%s'".formatted(header, filename), "Upload file error"));
+                "%s, upload file '%s'".formatted(logTitle, filename), "Upload file error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -59,16 +55,16 @@ public class FileStorageController {
                                           @RequestParam("filename") String filename,
                                           @RequestBody EditFileNameRequest request) {
         service.editFileName(filename, request.getFilename(), provider.trueUser(authToken,
-                "%s, edit file name '%s' -> '%s'".formatted(header, filename, request.getFilename()),
+                "%s, edit file name '%s' -> '%s'".formatted(logTitle, filename, request.getFilename()),
                 "Edit file name error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @DeleteMapping()
     public ResponseEntity<?> deleteFileName(@RequestHeader("auth-token") String authToken,
-                                          @RequestParam("filename") String filename) {
+                                            @RequestParam("filename") String filename) {
         service.deleteFile(filename, provider.trueUser(authToken,
-                "%s, delete file '%s'".formatted(header, filename), "Delete file error"));
+                "%s, delete file '%s'".formatted(logTitle, filename), "Delete file error"));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -76,7 +72,7 @@ public class FileStorageController {
     public ResponseEntity<?> downloadFile(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename) {
         File file = service.downloadFile(filename, provider.trueUser(authToken,
-                "----------download resource----------\n %s, download file '%s'".formatted(header, filename),
+                "----------download resource----------\n %s, download file '%s'".formatted(logTitle, filename),
                 "Download file error"));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")

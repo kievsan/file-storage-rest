@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EditFileNameRequest { // Запрос на изменение имени файла
 
-    @Size(min = 1, max = 100, message = "filename: до 100 символов")
+    static final int max = 100;
+
+    @Size(min = 1, max = max, message = "filename: до " + max + " символов")
     @NotBlank(message = "filename не должен быть пустым!")
     private String filename;
 }

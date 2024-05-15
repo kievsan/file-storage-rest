@@ -1,16 +1,16 @@
 package ru.mail.kievsan.cloud_storage_api.service;
 
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.mail.kievsan.cloud_storage_api.exception.NoRightsException;
-import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
-import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
+import ru.mail.kievsan.cloud_storage_api.exception.*;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
-import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
+import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
+import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 
@@ -21,6 +21,8 @@ import java.util.function.Predicate;
 @Slf4j
 @Transactional
 public class UserService {
+
+    static final String logErrTitle = "[USER service error]";
 
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
@@ -38,7 +40,7 @@ public class UserService {
                 .build();
         if (userRepo.existsByEmail(newUser.getUsername())) {
             throw new UserRegistrationException("The username is already in use, registration is not possible!",
-                    HttpStatus.UNPROCESSABLE_ENTITY);
+                    null, null, null, "'register service'");
         }
         signup(newUser);
         return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getEmail(), newUser.getRole());
@@ -57,33 +59,93 @@ public class UserService {
         log.info("SUCCESS! {}", msg);
     }
 
-    public SignUpResponse getUserById(Long id, User currentUser) throws UserNotFoundException {
+    public SignUpResponse getUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
+        var exception = getNoRightsException(currentUser.getNickname(), Role.ADMIN, "to get a user", "getUserById");
+
+        if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority(Role.ADMIN.name()))) {
+            throw exception;
+        }
+
         User user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+
+        if (user.getNickname().equals("starter")) {
+            throw new UserRegistrationException("Can't get the 'starter' user data");
+        }
+
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority(Role.ADMIN.name()))
+                && !currentUser.getNickname().equals("starter")) {
+            throw exception;
+        }
+
         log.info("Success: got user {} ({}) by id={}. Current user {} ({}), {}", user.getUsername(), user.getNickname(), id,
                 currentUser.getUsername(), currentUser.getNickname(), currentUser.getAuthorities());
         return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
     }
 
     public SignUpResponse getCurrentUser(User user) throws UserNotFoundException {
+        if (user.getNickname().equals("starter")) {
+            throw new UserRegistrationException("Can't get the 'starter' user data");
+        }
         log.info("Success: got owner. User {} ({})", user.getUsername(), user.getNickname());
         return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
     }
 
     @Transactional
-    public void delUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
-        if (!currentUser.getAuthorities().contains(Role.ADMIN)) {
-            throw new NoRightsException("You do not have enough rights to delete a user if you are not an Admin",
-                    null, "USER", "'/user'", "'delete user service'");
+    public void updateUser(@Email String newEmail, String newPassword, User user) throws UserRegistrationException {
+        if (user.getNickname().equals("starter")) {
+            throw new UserRegistrationException("Can't update the 'starter' user");
         }
+
+        newEmail = newEmail == null || newEmail.isBlank() ? user.getEmail() : newEmail.trim();
+        newPassword = newPassword == null || newPassword.isBlank() ? user.getPassword() : encoder.encode(newPassword);
+
+        if (!newEmail.equals(user.getEmail()) && userRepo.existsByEmail(newEmail)) {
+            String errMsg = String.format("User with email '%s' already exists, the update is not possible!", newEmail);
+            log.error("{}  {} ('{}'): {}", logErrTitle, user.getEmail(), user.getNickname(), errMsg);
+            throw new UserRegistrationException(errMsg, null, null, null, "'updateUser service'");
+        }
+
+        userRepo.updateUserByEmailAndPassword(newEmail, newPassword, user);
+
+        log.info("SUCCESS update user '{}'  ->  email: '{}', password: {}", user.getNickname(), user.getEmail(), user.getPassword());
+    }
+
+    @Transactional
+    public void delUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
+        var exception = getNoRightsException(currentUser.getNickname(), Role.ADMIN, "to delete a user", "delUserById");
+
+        if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority(Role.ADMIN.name()))) {
+            throw exception;
+        }
+
         var user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+
+        if (user.getNickname().equals("starter")) {
+            throw new UserRegistrationException("Can't del the 'starter' user");
+        }
+
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority(Role.ADMIN.name()))
+                && !currentUser.getNickname().equals("starter")) {
+            throw exception;
+        }
+
         userRepo.deleteById(id);
+
         log.info("Success: deleted user '{}' by id={}. Current user {} ({}), {}", user.getNickname(), id,
                 currentUser.getUsername(), currentUser.getNickname(), currentUser.getAuthorities());
     }
 
     @Transactional
-    public void delCurrentUser(User user) throws UserNotFoundException {
+    public void delCurrentUser(User user) {
+        if (user.getNickname().equals("starter")) {
+            throw new UserRegistrationException("Can't del the 'starter' user");
+        }
         userRepo.delete(user);
         log.info("Success: deleted owner, user {} ({})", user.getUsername(), user.getNickname());
+    }
+
+    public NoRightsException getNoRightsException(String username, Role role, String action, String service) {
+        String errMsg = "%s:  You do not have enough rights %s if you has no '%s', for example...".formatted(username, action, role); // "to delete a user"
+        return new NoRightsException(errMsg, null, "USER", "'/user'", "'" + service + "' service"); // "delUserById"
     }
 }

@@ -16,7 +16,7 @@ import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 public class JWTUserDetails implements UserDetailsService {
 
     private final UserJPARepo userRepo;
-    private final JwtProvider provider;
+    private final JwtProvider jwtProvider;
 
     @Override
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -29,7 +29,7 @@ public class JWTUserDetails implements UserDetailsService {
         String badJWTExceptionMsg = "Bad user auth token";
         String badJWTErrMsg = "loadUserByJWT(jwt) warn:  " + badJWTExceptionMsg;
         try {
-            return loadUserByUsername(provider.extractUsername(validatedJWT(jwt)));
+            return loadUserByUsername(jwtProvider.extractUsername(validatedJWT(jwt)));
         } catch (RuntimeException ex) {
             log.warn("  {}. {}", badJWTErrMsg, ex.getMessage());
             throw new UnauthorizedUserException(badJWTExceptionMsg);
@@ -37,9 +37,9 @@ public class JWTUserDetails implements UserDetailsService {
     }
 
     public String validatedJWT(String jwt) throws UnauthorizedUserException {
-        String trueJWT = provider.resolveToken(jwt)
+        String trueJWT = jwtProvider.resolveToken(jwt)
                 .orElseThrow(() -> new UnauthorizedUserException("Empty or invalid JWT token."));
-        provider.validateToken(trueJWT);
+        jwtProvider.validateToken(trueJWT);
         return trueJWT;
     }
 

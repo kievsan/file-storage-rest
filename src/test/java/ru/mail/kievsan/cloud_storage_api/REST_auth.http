@@ -5,7 +5,7 @@
 ###
 
 # Аутентификация предустановленного суперадмина 'starter':
-# токен:   eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0MTk4ODc2LCJleHAiOjE3MTQxOTkxNzZ9.iGjaVY9N0wXL3lCelOK3dNw9MxBbNPcxPYZ9HSckTI-aWdbjfmihaDA0KQ6UdEv2
+# токен: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzM4Njg1LCJleHAiOjE3MTU3MzkyODV9.ijU-lma0eZx8N3lsIWi6F39qwW2OqdTMUagUqpgp007uv9JzRpdYX_rj-qEJQMpL
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -40,7 +40,7 @@ Content-Type: application/json
 
 # Выход из учетной записи
 POST {{baseUrl}}/logout
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0NjkxODcyLCJleHAiOjE3MTQ2OTI0NzJ9.emW9PjeMmDs5iWY3FM7Ryz7klUeJmVm6RKX81EHMxnW-uMKFTJWT59h3ZYNwONKd
-Content-Type: : application/json
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQyMjU3LCJleHAiOjE3MTU3NDI4NTd9.XpSU-fBiuqtyJzXoCtAzKJ-3DnrM0Jn_6TZLR8VSWIEFwwue8GfUnDKKkouegDvK
+Content-Type: application/json
 
 ###

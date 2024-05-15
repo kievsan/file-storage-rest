@@ -26,10 +26,10 @@ public class UserRegistrationException extends AdviceException {
 
     public UserRegistrationException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {
         super(message,
-                httpStatus == null ? HttpStatus.INTERNAL_SERVER_ERROR : httpStatus,
+                httpStatus == null ? HttpStatus.UNPROCESSABLE_ENTITY : httpStatus,
                 controller == null ? "USER" : controller,
-                entryPoint == null ? "'/user/reg'" : entryPoint,
-                source == null ? "'register service'" : source);
+                entryPoint == null ? "'/user'" : entryPoint,
+                source);
     }
 
     public UserRegistrationException(AdviceException ex, String message) {

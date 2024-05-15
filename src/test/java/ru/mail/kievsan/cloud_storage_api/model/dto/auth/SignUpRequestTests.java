@@ -2,6 +2,7 @@ package ru.mail.kievsan.cloud_storage_api.model.dto.auth;
 
 import org.junit.jupiter.api.*;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
+import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

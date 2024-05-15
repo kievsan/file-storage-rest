@@ -1,4 +1,4 @@
-package ru.mail.kievsan.cloud_storage_api.model.dto.auth;
+package ru.mail.kievsan.cloud_storage_api.model.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,20 +14,21 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 @AllArgsConstructor
 public class SignUpRequest { // Запрос на регистрацию
 
-    static final int max = 30;
+    static final int max = 100;
+    static final int min = 6;
 
-    @Size(min = 3, max = max, message = "nickname: от 3 до " + max + " символов")
+    @Size(min = min/2, max = max/4)
     @NotBlank(message = "nickname не должен быть пустым!")
     private String nickname;
 
-    @Size(min = 6, max = max, message = "email: до " + max + " символов")
+    @Size(min = min, max = max)
     @NotBlank(message = "email не должен быть пустым!")
     private String email;
 
+    @Size(min = min, max = max/4)
     @NotBlank(message = "password не должен быть пустым!")
     private String password;
 
-    @Size(min = 6, max = max, message = "Role.name: ROLE_ADMIN, ROLE_USER, ...")
     @NotBlank(message = "role не может быть пустой!")
     private Role role;
 }

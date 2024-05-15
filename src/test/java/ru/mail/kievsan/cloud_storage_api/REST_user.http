@@ -6,7 +6,6 @@
 
 # Регистрация учетной записи
 POST {{baseUrl}}/user
-auth-token:
 Content-Type: application/json
 
 {
@@ -20,7 +19,7 @@ Content-Type: application/json
 
 # Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NTk5MTQwLCJleHAiOjE3MTU1OTk3NDB9.Ydo2zbq3LQy-CMsgV5CqcLshf_FIm4EkdHlx5VR5k7_aIqGfQdF0CtdXZ6YUe36q
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQ3MDE5LCJleHAiOjE3MTU3NDc2MTl9.8__9l_7Ayul3vtkOwTuLj3dEgvjQhlX9ZVirVIxB72aV3-zlzuFzQamf-5ggoCRd
 Content-Type: application/json
 
 {
@@ -29,5 +28,45 @@ Content-Type: application/json
   "password": "1234567" ,
   "role": "ADMIN"
 }
+
+###
+
+# Редактировать свою учетную запись
+PUT {{baseUrl}}/user
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJrbmhlbDc3QGdtYWlsLmNvbSIsImlhdCI6MTcxNTc0MjMwNywiZXhwIjoxNzE1NzQyOTA3fQ.tWALMx4tSQULZ4N38prx4Bj1MoxyfsqRkdaAQuglMuoYdQdsmHp7g_QYOonsxllr
+Content-Type: application/json
+
+{
+  "email": "knhel77@gmail.com" ,
+  "password": "1234567"
+}
+
+###
+
+# Получить свою учетную запись
+GET {{baseUrl}}/user
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQyNjY3LCJleHAiOjE3MTU3NDMyNjd9.e1UHJlvyQyFK_cpP_gW_LqxOI8JhXv8eMaNfda9niS6gStHdtj0AqoK9Dz5oaIKM
+Content-Type: application/json
+
+###
+
+# Получить учетную запись по id
+GET {{baseUrl}}/user/2
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQ3MDE5LCJleHAiOjE3MTU3NDc2MTl9.8__9l_7Ayul3vtkOwTuLj3dEgvjQhlX9ZVirVIxB72aV3-zlzuFzQamf-5ggoCRd
+Content-Type: application/json
+
+###
+
+# Удалить свою учетную запись
+DELETE {{baseUrl}}/user
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQyNjY3LCJleHAiOjE3MTU3NDMyNjd9.e1UHJlvyQyFK_cpP_gW_LqxOI8JhXv8eMaNfda9niS6gStHdtj0AqoK9Dz5oaIKM
+Content-Type: application/json
+
+###
+
+# Удалить учетную запись по id
+DELETE {{baseUrl}}/user/2
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQ3MDE5LCJleHAiOjE3MTU3NDc2MTl9.8__9l_7Ayul3vtkOwTuLj3dEgvjQhlX9ZVirVIxB72aV3-zlzuFzQamf-5ggoCRd
+Content-Type: application/json
 
 ###
