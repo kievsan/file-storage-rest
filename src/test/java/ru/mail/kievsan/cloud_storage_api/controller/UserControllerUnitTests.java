@@ -20,6 +20,7 @@ import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
+import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
@@ -48,7 +49,6 @@ public class UserControllerUnitTests {
     JWTUserDetails userDetails;
 
     User testUser;
-    SignUpRequest testRequest;
     SignUpResponse testResponse;
 
     @BeforeAll
@@ -71,12 +71,13 @@ public class UserControllerUnitTests {
     @AfterEach
     public void finishTest() {
         testUser = null;
+        testResponse = null;
     }
 
     @Test
     public void register() throws Exception {
-        testRequest = newSignUpRequest();
-        testResponse = newSignUpResponse();
+        var testRequest = new SignUpRequest(testUser.getNickname(), testUser.getEmail(), testUser.getPassword(), testUser.getRole());
+        testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
 
         Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse);
 
@@ -91,9 +92,25 @@ public class UserControllerUnitTests {
                 .andExpect(jsonPath("$.email", Matchers.is(testUser.getEmail())))
                 .andExpect(jsonPath("$.role", Matchers.is(testUser.getRole().toString())))
         ;
+    }
 
-        testRequest = null;
-        testResponse = null;
+    @Test
+    public void update() throws Exception {
+        var testRequest = new UpdateRequest("new_" + testUser.getEmail(), "new_" + testUser.getPassword());
+        testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
+
+        Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse);
+
+        mockMvc.perform(post(USER_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(testRequest))
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.nickname", Matchers.is(testUser.getNickname())))
+//                .andExpect(jsonPath("$.email", Matchers.is(testRequest.getEmail())))
+//                .andExpect(jsonPath("$.role", Matchers.is(testUser.getRole().name())))
+        ;
     }
 
     private User newUser() {
@@ -104,13 +121,5 @@ public class UserControllerUnitTests {
                 .role(Role.USER)
                 .enabled(true)
                 .build();
-    }
-
-    private SignUpRequest newSignUpRequest() {
-        return new SignUpRequest(testUser.getNickname(), testUser.getEmail(), testUser.getPassword(), testUser.getRole());
-    }
-
-    private SignUpResponse newSignUpResponse() {
-        return new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
     }
 }

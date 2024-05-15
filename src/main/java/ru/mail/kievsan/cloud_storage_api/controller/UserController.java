@@ -56,11 +56,10 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateUser(@RequestHeader("auth-token") String authToken,
+    public ResponseEntity<SignUpResponse> updateUser(@RequestHeader("auth-token") String authToken,
                                         @RequestBody UpdateRequest request) {
-        service.updateUser(request.getEmail(), request.getPassword(), userProvider.trueUser(authToken,
-                "%s, update %s".formatted(logTitle, userDetails.presentAuthenticated()), "Update user error"));
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok(service.updateUser(request, userProvider.trueUser(authToken,
+                "%s, update %s".formatted(logTitle, userDetails.presentAuthenticated()), "Update user error")));
     }
 
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")  // блокирует любых пользователей ??????????!!!

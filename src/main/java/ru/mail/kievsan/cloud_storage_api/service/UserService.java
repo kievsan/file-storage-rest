@@ -1,6 +1,5 @@
 package ru.mail.kievsan.cloud_storage_api.service;
 
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,6 +10,7 @@ import ru.mail.kievsan.cloud_storage_api.exception.*;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
+import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 
@@ -27,15 +27,15 @@ public class UserService {
     private final UserJPARepo userRepo;
     private final PasswordEncoder encoder;
 
-    public SignUpResponse register(SignUpRequest request, User owner) throws UserRegistrationException {
+    public SignUpResponse register(SignUpRequest req, User owner) throws UserRegistrationException {
         Predicate<User> USER_IS_ADMIN = user-> user != null && user.isAccountNonLocked() && user.getRole() == Role.ADMIN;
         Predicate<User> USER_IS_SUPER_ADMIN = user-> USER_IS_ADMIN.test(user) && "starter".equals(user.getNickname());
 
         var newUser = User.builder()
-                .nickname(request.getNickname())
-                .email(request.getEmail())
-                .password(encoder.encode(request.getPassword()))
-                .role(USER_IS_SUPER_ADMIN.test(owner) ? request.getRole() : Role.USER)
+                .nickname(req.getNickname())
+                .email(req.getEmail())
+                .password(encoder.encode(req.getPassword()))
+                .role(USER_IS_SUPER_ADMIN.test(owner) ? req.getRole() : Role.USER)
                 .enabled(true)
                 .build();
         if (userRepo.existsByEmail(newUser.getUsername())) {
@@ -43,7 +43,7 @@ public class UserService {
                     null, null, null, "'register service'");
         }
         signup(newUser);
-        return new SignUpResponse(newUser.getId(), newUser.getNickname(), newUser.getEmail(), newUser.getRole());
+        return new SignUpResponse(newUser);
     }
     //
     public void signup(User newUser) throws UserRegistrationException {
@@ -79,7 +79,7 @@ public class UserService {
 
         log.info("Success: got user {} ({}) by id={}. Current user {} ({}), {}", user.getUsername(), user.getNickname(), id,
                 currentUser.getUsername(), currentUser.getNickname(), currentUser.getAuthorities());
-        return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
+        return new SignUpResponse(user);
     }
 
     public SignUpResponse getCurrentUser(User user) throws UserNotFoundException {
@@ -87,17 +87,17 @@ public class UserService {
             throw new UserRegistrationException("Can't get the 'starter' user data");
         }
         log.info("Success: got owner. User {} ({})", user.getUsername(), user.getNickname());
-        return new SignUpResponse(user.getId(), user.getNickname(), user.getEmail(), user.getRole());
+        return new SignUpResponse(user);
     }
 
     @Transactional
-    public void updateUser(@Email String newEmail, String newPassword, User user) throws UserRegistrationException {
+    public SignUpResponse updateUser(UpdateRequest req, User user) throws UserRegistrationException {
         if (user.getNickname().equals("starter")) {
             throw new UserRegistrationException("Can't update the 'starter' user");
         }
 
-        newEmail = newEmail == null || newEmail.isBlank() ? user.getEmail() : newEmail.trim();
-        newPassword = newPassword == null || newPassword.isBlank() ? user.getPassword() : encoder.encode(newPassword);
+        String newEmail = req.getEmail() == null || req.getEmail().isBlank() ? user.getEmail() : req.getEmail().trim();
+        String newPassword = req.getPassword() == null || req.getPassword().isEmpty() ? user.getPassword() : encoder.encode(req.getPassword());
 
         if (!newEmail.equals(user.getEmail()) && userRepo.existsByEmail(newEmail)) {
             String errMsg = String.format("User with email '%s' already exists, the update is not possible!", newEmail);
@@ -107,7 +107,9 @@ public class UserService {
 
         userRepo.updateUserByEmailAndPassword(newEmail, newPassword, user);
 
-        log.info("SUCCESS update user '{}'  ->  email: '{}', password: {}", user.getNickname(), user.getEmail(), user.getPassword());
+        log.info("SUCCESS update user '{}'  ->  email: '{}', password: {}", user.getNickname(), newEmail, newPassword);
+        user.setEmail(newEmail);
+        return new SignUpResponse(user);
     }
 
     @Transactional
