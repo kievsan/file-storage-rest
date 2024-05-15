@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
@@ -104,10 +105,12 @@ public class UserControllerUnitTests {
 
         Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse);
 
-        mockMvc.perform(put(USER_URI).header("auth-token", "......")
+        mockMvc.perform(put(USER_URI)
+                        .header("auth-token", "...")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(testRequest))
                         .with(csrf())
+                        .with(SecurityMockMvcRequestPostProcessors.user(testUser))
                 )
                 .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.nickname", Matchers.is(testUser.getNickname())))
