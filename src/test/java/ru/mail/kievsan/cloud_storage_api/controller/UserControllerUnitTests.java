@@ -98,7 +98,7 @@ public class UserControllerUnitTests {
     @Test
     public void edit() throws Exception {
         var testRequest = new UpdateRequest("new_" + testUser.getEmail(), "new_" + testUser.getPassword());
-        testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
+        testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testRequest.getEmail(), testUser.getRole());
 
         // ????
 
