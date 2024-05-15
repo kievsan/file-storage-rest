@@ -1,10 +1,10 @@
 package ru.mail.kievsan.cloud_storage_api.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,16 +106,15 @@ public class UserControllerUnitTests {
         Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse);
 
         mockMvc.perform(put(USER_URI)
-                        .header("auth-token", "...")
+                        .header("auth-token", jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(testRequest))
                         .with(csrf())
                         .with(SecurityMockMvcRequestPostProcessors.user(testUser))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                 )
                 .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.nickname", Matchers.is(testUser.getNickname())))
-//                .andExpect(jsonPath("$.email", Matchers.is(testRequest.getEmail())))
-//                .andExpect(jsonPath("$.role", Matchers.is(testUser.getRole().name())))
+                .andExpect(header().exists("auth-token"))
         ;
     }
 
