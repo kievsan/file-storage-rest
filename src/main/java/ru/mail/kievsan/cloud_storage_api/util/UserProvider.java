@@ -1,35 +1,29 @@
 package ru.mail.kievsan.cloud_storage_api.util;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
 
+import java.util.function.Consumer;
+
 @Slf4j
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserProvider {
 
-    private final JWTUserDetails userDetails;
+    public final JWTUserDetails userDetails;
 
-    public User trueUser(String jwt, String logMsg, String errMsg) throws UnauthorizedUserException {
-        logg(logMsg);
+    public User trueUser(String jwt, String logMsg, String logErr, Consumer<String> logger) throws UnauthorizedUserException {
+        log.info(" {}:  {}", logMsg, userDetails.presentAuthenticated());
         try {
             return userDetails.loadUserByJWT(jwt); // валидация jwt и выдача user
         } catch (UnauthorizedUserException ex) {
-            String msg = String.format("%s:  user unauthorized.  %s", errMsg, ex);
-            if (errMsg.toLowerCase().contains("warn")) {
-                log.warn(msg);
-            } else {
-                log.error(msg);
-            }
+            String msg = "%s:  user unauthorized.  %s".formatted(logErr, ex);
+            logger.accept(msg);
             throw new UnauthorizedUserException(ex, msg);
         }
-    }
-
-    public void logg(String msg) {
-        log.info(" {}:  {}", msg, userDetails.presentAuthenticated());
     }
 }

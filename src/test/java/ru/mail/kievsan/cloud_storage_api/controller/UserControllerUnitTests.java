@@ -44,13 +44,13 @@ public class UserControllerUnitTests {
     @MockBean
     UserService userService;
     @MockBean
-    JwtAuthenticationEntryPoint entryPoint;
-    @MockBean
     UserProvider userProvider;
     @MockBean
     JWTUserDetails userDetails;
+    @MockBean
+    JwtAuthenticationEntryPoint entryPoint;
 
-    User testUser;
+    static User testUser;
     SignUpResponse testResponse;
 
     @BeforeAll

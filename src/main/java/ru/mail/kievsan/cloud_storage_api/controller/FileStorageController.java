@@ -31,7 +31,7 @@ public class FileStorageController {
                                         @RequestParam("filename") String filename,
                                         @RequestBody MultipartFile file) {
         service.uploadFile(filename, file, provider.trueUser(authToken,
-                "%s, upload file '%s'".formatted(logTitle, filename), "Upload file error"));
+                "%s, upload file '%s'".formatted(logTitle, filename), "Upload file error", log::error));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -54,9 +54,10 @@ public class FileStorageController {
     public ResponseEntity<?> editFileName(@RequestHeader("auth-token") String authToken,
                                           @RequestParam("filename") String filename,
                                           @RequestBody EditFileNameRequest request) {
-        service.editFileName(filename, request.getFilename(), provider.trueUser(authToken,
-                "%s, edit file name '%s' -> '%s'".formatted(logTitle, filename, request.getFilename()),
-                "Edit file name error"));
+        service.editFileName(filename, request.getFilename(),
+                provider.trueUser(authToken,
+                        "%s, edit file name '%s' -> '%s'".formatted(logTitle, filename, request.getFilename()),
+                        "Edit file name error", log::error));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -64,7 +65,7 @@ public class FileStorageController {
     public ResponseEntity<?> deleteFileName(@RequestHeader("auth-token") String authToken,
                                             @RequestParam("filename") String filename) {
         service.deleteFile(filename, provider.trueUser(authToken,
-                "%s, delete file '%s'".formatted(logTitle, filename), "Delete file error"));
+                "%s, delete file '%s'".formatted(logTitle, filename), "Delete file error", log::error));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -73,7 +74,7 @@ public class FileStorageController {
                                           @RequestParam("filename") String filename) {
         File file = service.downloadFile(filename, provider.trueUser(authToken,
                 "----------download resource----------\n %s, download file '%s'".formatted(logTitle, filename),
-                "Download file error"));
+                "Download file error", log::error));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(file.getContent());
