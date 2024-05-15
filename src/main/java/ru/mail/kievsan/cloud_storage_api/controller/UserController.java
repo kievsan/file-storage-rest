@@ -39,7 +39,8 @@ public class UserController {
         }
     }
 
-//    @RolesAllowed({"ROLE_ADMIN"})
+//    @RolesAllowed({"ROLE_ADMIN"})  // блокирует любых пользователей ??????????!!! ПОЧЕМУ с Role.ADMIN тоже блокирует?
+//    @Secured({"ROLE_ADMIN"})      // блокирует любых пользователей ??????????!!!
     @GetMapping("/{id}")
     public ResponseEntity<SignUpResponse> getUser(@PathVariable Long id,
                                                   @RequestHeader(name = "auth-token") String authToken) {
@@ -61,7 +62,7 @@ public class UserController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-//    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")  // блокирует любых пользователей ??????????!!!
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delUser(@PathVariable Long id, @RequestHeader(name = "auth-token") String authToken) {
         service.delUserById(id, userProvider.trueUser(authToken,logTitle, "Del User error"));
