@@ -22,12 +22,11 @@ public class UserJPARepoTests {
 
     private static long suiteStartTime;
 
+    private User testUser;
+    private final String email = "testuser@mail.ru";
+
     @Autowired
     private UserJPARepo userRepo;
-
-    private User testUser;
-
-    private final String email = "testuser@mail.ru";
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -90,6 +89,19 @@ public class UserJPARepoTests {
 
         assertNotNull(foundUser);
         assertEquals(email, foundUser.getUsername());
+    }
+
+    @Test
+    void updateUserByEmailAndPassword() {
+        String newEmail = "newUsername@mail.ru";
+        String newPassword = "newPassword";
+        User user = userRepo.findByEmail(testUser.getEmail()).get();
+
+        userRepo.updateUserByEmailAndPassword(newEmail, newPassword, user);
+        User updatedUser = userRepo.findByEmail(newEmail).orElse(null);
+
+        assertNotNull(updatedUser);
+        assertEquals(user, updatedUser);
     }
 
 }
