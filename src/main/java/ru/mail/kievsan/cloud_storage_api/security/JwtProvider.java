@@ -36,15 +36,13 @@ public class JwtProvider {
     @Value("${security.jwt.token.secret-key}")
     private String secret;
 
-//    @Getter
-    @Getter
     private String secretKey;
 
     @PostConstruct
     protected void secretInit() {
         boolean secretExists = secret != null && secret.trim().equals(secret) && secret.length() > 10;
         secretKey = secretExists ? generateKey(secret) : generateKey();
-        log.warn(">--------------< Secret key: {}", getSecretKey());
+        log.warn(">--------------< Secret key: {}", secretKey);
     }
 
     public String extractUsername(String token) {
@@ -57,7 +55,7 @@ public class JwtProvider {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
-                .signWith(getSigningKey(getSecretKey()))
+                .signWith(getSigningKey(secretKey))
                 .compact();
     }
 
@@ -68,7 +66,7 @@ public class JwtProvider {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
-                .signWith(getSigningKey(getSecretKey()))
+                .signWith(getSigningKey(secretKey))
                 .compact();
     }
 
@@ -133,7 +131,7 @@ public class JwtProvider {
     }
 
     public JwtParser getJwtParser() {
-        return Jwts.parser().verifyWith((SecretKey) getSigningKey(getSecretKey())).build(); // .setSigningKey(getSigningKey()).build()
+        return Jwts.parser().verifyWith((SecretKey) getSigningKey(secretKey)).build(); // .setSigningKey(getSigningKey()).build()
     }
 
 }

@@ -83,9 +83,6 @@ public class UserControllerUnitTests {
         System.out.println("Starting new test " + this);
         testUser = newUser();
 
-        Mockito.when(jwtProvider.getSecretKey()).thenReturn(secretKey); //+++++ Mock
-        Mockito.when(jwtProvider.getTokenLifetime()).thenReturn(tokenLifetime); //+++++ Mock
-
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         Key signingKey = Keys.hmacShaKeyFor(keyBytes);
         auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
