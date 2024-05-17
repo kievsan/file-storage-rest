@@ -61,7 +61,7 @@ public class JwtProvider {
 
     public String generateToken(UserDetails userDetails) {
        return Jwts.builder()
-                .claim("auth", userDetails.getAuthorities()
+                .claim("authorities", userDetails.getAuthorities()
                         .stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")))
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
