@@ -63,9 +63,9 @@ public class UserControllerUnitTests {
 
     User testUser;
     SignUpResponse testResponse;
-
-    final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
     String auth, jwt;
+    final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
+    final long tokenLifetime = 600000;
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -83,19 +83,19 @@ public class UserControllerUnitTests {
         System.out.println("Starting new test " + this);
         testUser = newUser();
 
+        Mockito.when(jwtProvider.getSecretKey()).thenReturn(secretKey); //+++++ Mock
+        Mockito.when(jwtProvider.getTokenLifetime()).thenReturn(tokenLifetime); //+++++ Mock
+
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         Key signingKey = Keys.hmacShaKeyFor(keyBytes);
-
         auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         jwt = Jwts.builder()
                 .claim("authorities", auth)
                 .subject(testUser.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 600000))
+                .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
                 .signWith(signingKey)
                 .compact();
-
-        Mockito.when(jwtProvider.getSecretKey()).thenReturn(secretKey); //+++++ Mock
         Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(jwt); //+++++ Mock
 
         Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
@@ -104,8 +104,8 @@ public class UserControllerUnitTests {
         Mockito.when(userDetails.presentJWT(Mockito.anyString()))
                 .thenReturn(jwt.substring(0,jwt.length()/10) + "..."); //+++++ Mock
 
-        log.warn("test AUTH:  '{}'", auth);
-        log.warn("test JWT:  '{}'", userDetails.presentJWT(jwt));
+        log.info("test AUTH:  '{}'", auth);
+        log.info("test JWT:  '{}'", userDetails.presentJWT(jwt));
     }
 
     @AfterEach
@@ -121,17 +121,15 @@ public class UserControllerUnitTests {
 
         Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
-        mockMvc.perform(post(SIGN_UP_URI)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(testRequest))
-                        .with(csrf())
-                )
-//                .andExpect(status().isUnauthorized())
-                .andExpect(status().isOk())
+        var mockRequest = post(SIGN_UP_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(testRequest))
+                .with(csrf());
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk())  //     .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.nickname", Matchers.is(testUser.getNickname())))
                 .andExpect(jsonPath("$.email", Matchers.is(testUser.getEmail())))
-                .andExpect(jsonPath("$.role", Matchers.is(testUser.getRole().toString())))
-        ;
+                .andExpect(jsonPath("$.role", Matchers.is(testUser.getRole().toString())));
     }
 
     @Test

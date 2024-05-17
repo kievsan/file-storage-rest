@@ -29,12 +29,14 @@ import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.ge
 @Service
 public class JwtProvider {
 
+    @Getter
     @Value("${security.jwt.token.expire-length}")
     private long tokenLifetime;     // in milliseconds
 
     @Value("${security.jwt.token.secret-key}")
     private String secret;
 
+//    @Getter
     @Getter
     private String secretKey;
 
