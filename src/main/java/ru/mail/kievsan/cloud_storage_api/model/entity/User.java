@@ -48,7 +48,7 @@ public class User implements UserDetails {
     private List<File> userFiles;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 

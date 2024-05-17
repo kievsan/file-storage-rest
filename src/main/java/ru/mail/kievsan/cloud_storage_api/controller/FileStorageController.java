@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file.EditFileNameRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
-import ru.mail.kievsan.cloud_storage_api.security.SecuritySettings;
+import ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(SecuritySettings.FILE_URI)
+@RequestMapping(ISecuritySettings.FILE_URI)
 @Slf4j
 public class FileStorageController {
 

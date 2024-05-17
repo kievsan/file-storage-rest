@@ -1,6 +1,6 @@
 package ru.mail.kievsan.cloud_storage_api.security;
 
-public interface SecuritySettings {
+public interface ISecuritySettings {
     String JWT_HEADER_NAME = "auth-token";
     String BASE_URI = "/api/v1";
     String USER_URI = BASE_URI + "/user";

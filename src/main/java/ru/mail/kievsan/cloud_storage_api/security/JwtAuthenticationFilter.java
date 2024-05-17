@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
-import ru.mail.kievsan.cloud_storage_api.util.LogUtils;
+import ru.mail.kievsan.cloud_storage_api.util.ILogUtils;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    static String className = LogUtils.className_.apply(JwtAuthenticationFilter.class);
+    static String className = ILogUtils.className_.apply(JwtAuthenticationFilter.class);
 
     private final JWTUserDetails details;
 
@@ -34,13 +34,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws UnauthorizedUserException, ServletException, IOException {
 
         final String uri = request.getRequestURI(), method = request.getMethod();
-        final String jwt = request.getHeader(SecuritySettings.JWT_HEADER_NAME);
+        final String jwt = request.getHeader(ISecuritySettings.JWT_HEADER_NAME);
 
-        log.info("{}< {} :  {} >----- Start {},  token  '{}'", LogUtils.prefix, uri, method, className, details.presentJWT(jwt));
+        log.info("{}< {} :  {} >----- Start {},  token  '{}'", ILogUtils.prefix, uri, method, className, details.presentJWT(jwt));
 
         if (jwt == null || jwt.isBlank()) {
             String service = String.format("'%s' %s request", uri, method);
-            String err = String.format(" no JWT header '%s'.", SecuritySettings.JWT_HEADER_NAME);
+            String err = String.format(" no JWT header '%s'.", ISecuritySettings.JWT_HEADER_NAME);
             shutDown(new UnauthorizedUserException(err, null, null, service, className));
         } else {
             try {
@@ -56,21 +56,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
-        log.info("{} Finish {} :  {},  token  '{}'", LogUtils.prefix, className,
+        log.info("{} Finish {} :  {},  token  '{}'", ILogUtils.prefix, className,
                 details.presentAuthenticated(), details.presentJWT(jwt));
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         final String uri = request.getRequestURI(), method = request.getMethod();
-        final String jwt = request.getHeader(SecuritySettings.JWT_HEADER_NAME);
-        return SecuritySettings.LOGIN_URI.equals(uri)
+        final String jwt = request.getHeader(ISecuritySettings.JWT_HEADER_NAME);
+        return ISecuritySettings.LOGIN_URI.equals(uri)
                 || (jwt == null || jwt.isBlank())
-                && SecuritySettings.POST_FREE_ENTRY_POINTS.contains(uri) && "POST".equals(method);
+                && ISecuritySettings.POST_FREE_ENTRY_POINTS.contains(uri) && "POST".equals(method);
     }
 
     private void shutDown(RuntimeException ex) throws UnauthorizedUserException {
-        log.error("{} Failed to execute {}:\t{}", LogUtils.prefix, className, ex.getMessage());
+        log.error("{} Failed to execute {}:\t{}", ILogUtils.prefix, className, ex.getMessage());
         SecurityContextHolder.clearContext();
         throw ex;
     }

@@ -12,20 +12,22 @@ import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
-import ru.mail.kievsan.cloud_storage_api.security.SecuritySettings;
+import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping(SecuritySettings.USER_URI)
+@RequestMapping(ISecuritySettings.USER_URI)
 public class UserController {
 
     static final String logTitle = "Start User controller";
 
     private final UserService service;
     private final UserProvider userProvider;
+    private final JWTUserDetails userDetails;
 
     @PermitAll
     @PostMapping
@@ -60,7 +62,7 @@ public class UserController {
                                         @RequestBody UpdateRequest request) {
         return ResponseEntity.ok(service.updateUser(request,
                 userProvider.trueUser(authToken,
-                        "%s, update %s".formatted(logTitle, userProvider.userDetails.presentAuthenticated()),
+                        "%s, update %s".formatted(logTitle, userDetails.presentAuthenticated()),
                         "Update user error", log::error)));
     }
 

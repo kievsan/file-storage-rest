@@ -3,10 +3,12 @@ package ru.mail.kievsan.cloud_storage_api.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SecurityException;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -16,8 +18,8 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.generateKey;
 import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.getSigningKey;
@@ -33,13 +35,14 @@ public class JwtProvider {
     @Value("${security.jwt.token.secret-key}")
     private String secret;
 
+    @Getter
     private String secretKey;
 
     @PostConstruct
     protected void secretInit() {
         boolean secretExists = secret != null && secret.trim().equals(secret) && secret.length() > 10;
         secretKey = secretExists ? generateKey(secret) : generateKey();
-        log.warn(">--------------< Secret key: {}", secretKey);
+        log.warn(">--------------< Secret key: {}", getSecretKey());
     }
 
     public String extractUsername(String token) {
@@ -52,12 +55,19 @@ public class JwtProvider {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
-                .signWith(getSigningKey(secretKey))
+                .signWith(getSigningKey(getSecretKey()))
                 .compact();
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new ConcurrentHashMap<>(), userDetails);
+       return Jwts.builder()
+                .claim("auth", userDetails.getAuthorities()
+                        .stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")))
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
+                .signWith(getSigningKey(getSecretKey()))
+                .compact();
     }
 
     public String generateToken(Authentication auth) {
@@ -121,7 +131,7 @@ public class JwtProvider {
     }
 
     public JwtParser getJwtParser() {
-        return Jwts.parser().verifyWith((SecretKey) getSigningKey(secretKey)).build(); // .setSigningKey(getSigningKey()).build()
+        return Jwts.parser().verifyWith((SecretKey) getSigningKey(getSecretKey())).build(); // .setSigningKey(getSigningKey()).build()
     }
 
 }

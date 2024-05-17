@@ -1,5 +1,6 @@
 package ru.mail.kievsan.cloud_storage_api.security;
 
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 @Slf4j
 public class JWTUserDetails implements UserDetailsService {
 
+    @Resource
     private final UserJPARepo userRepo;
     private final JwtProvider jwtProvider;
 

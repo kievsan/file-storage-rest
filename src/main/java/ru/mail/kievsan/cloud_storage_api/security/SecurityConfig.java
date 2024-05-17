@@ -14,10 +14,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
-import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -68,10 +69,11 @@ public class SecurityConfig {
         http
                 .httpBasic(withDefaults())
                 .authenticationProvider(authProvider)
-                .exceptionHandling(exception -> exception
+                .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(authEntryPoint)
                         .accessDeniedPage(LOGIN_URI)
                 );
+        http.securityContext((context) -> context.securityContextRepository(new HttpSessionSecurityContextRepository()));
         return http.build();
     }
 }

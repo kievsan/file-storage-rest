@@ -1,22 +1,27 @@
 package ru.mail.kievsan.cloud_storage_api.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static ru.mail.kievsan.cloud_storage_api.security.SecuritySettings.*;
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
@@ -25,16 +30,19 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
-import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
-import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
-import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
+import ru.mail.kievsan.cloud_storage_api.security.*;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.stream.Collectors;
 
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
 public class UserControllerUnitTests {
 
+    private static final Logger log = LoggerFactory.getLogger(UserControllerUnitTests.class);
     private static long suiteStartTime;
 
     @Autowired
@@ -45,14 +53,19 @@ public class UserControllerUnitTests {
     @MockBean
     UserService userService;
     @MockBean
+    JwtProvider jwtProvider;
+    @MockBean
     UserProvider userProvider;
     @MockBean
     JWTUserDetails userDetails;
     @MockBean
     JwtAuthenticationEntryPoint entryPoint;
 
-    static User testUser;
+    User testUser;
     SignUpResponse testResponse;
+
+    final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
+    String auth, jwt;
 
     @BeforeAll
     public static void testSuiteInit() {
@@ -69,6 +82,30 @@ public class UserControllerUnitTests {
     public void runTest() {
         System.out.println("Starting new test " + this);
         testUser = newUser();
+
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        Key signingKey = Keys.hmacShaKeyFor(keyBytes);
+
+        auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+        jwt = Jwts.builder()
+                .claim("authorities", auth)
+                .subject(testUser.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 600000))
+                .signWith(signingKey)
+                .compact();
+
+        Mockito.when(jwtProvider.getSecretKey()).thenReturn(secretKey); //+++++ Mock
+        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(jwt); //+++++ Mock
+
+        Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
+        Mockito.when(userDetails.presentAuthenticated())
+                .thenReturn("user  %s, %s".formatted(testUser.getUsername(), auth)); //+++++ Mock
+        Mockito.when(userDetails.presentJWT(Mockito.anyString()))
+                .thenReturn(jwt.substring(0,jwt.length()/10) + "..."); //+++++ Mock
+
+        log.warn("test AUTH:  '{}'", auth);
+        log.warn("test JWT:  '{}'", userDetails.presentJWT(jwt));
     }
 
     @AfterEach
@@ -82,7 +119,7 @@ public class UserControllerUnitTests {
         var testRequest = new SignUpRequest(testUser.getNickname(), testUser.getEmail(), testUser.getPassword(), testUser.getRole());
         testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
 
-        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse);
+        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
         mockMvc.perform(post(SIGN_UP_URI)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -102,21 +139,17 @@ public class UserControllerUnitTests {
         var testRequest = new UpdateRequest("new_" + testUser.getEmail(), "new_" + testUser.getPassword());
         testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testRequest.getEmail(), testUser.getRole());
 
-        // ????
+        Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
-        Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse);
-
-        mockMvc.perform(put(USER_URI)
-                        .header("auth-token", jwt().authorities(new SimpleGrantedAuthority(Role.USER.name())))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(testRequest))
-                        .with(csrf())
-                        .with(SecurityMockMvcRequestPostProcessors.user(testUser))
-                        .with(SecurityMockMvcRequestPostProcessors.jwt())
-                )
+        var mockRequest = put(USER_URI)
+                .header("auth-token", "Bearer " + jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(testRequest))
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
                 .andExpect(status().isOk())
-                .andExpect(header().exists("auth-token"))
-        ;
+                .andExpect(jsonPath("$.email", Matchers.is(testRequest.getEmail())));
     }
 
     private User newUser() {
