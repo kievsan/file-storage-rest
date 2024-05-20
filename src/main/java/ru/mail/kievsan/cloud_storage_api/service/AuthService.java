@@ -16,7 +16,7 @@ import ru.mail.kievsan.cloud_storage_api.exception.NotAuthenticateException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
-import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 
 @Service
@@ -24,7 +24,7 @@ import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 @Slf4j
 public class AuthService {
 
-    private final JWTUserDetails userDetails;
+    private final JwtUserDetails userDetails;
     private final JwtProvider provider;
     private final AuthenticationManager authManager;
 //

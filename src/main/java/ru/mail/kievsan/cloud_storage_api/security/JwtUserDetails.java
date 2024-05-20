@@ -14,7 +14,7 @@ import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class JWTUserDetails implements UserDetailsService {
+public class JwtUserDetails implements UserDetailsService {
 
     @Resource
     private final UserJPARepo userRepo;

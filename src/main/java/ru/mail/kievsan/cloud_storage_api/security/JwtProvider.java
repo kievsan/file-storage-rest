@@ -21,8 +21,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.generateKey;
-import static ru.mail.kievsan.cloud_storage_api.security.JWTSecretKeysManager.getSigningKey;
+import static ru.mail.kievsan.cloud_storage_api.security.JwtSecretKeysManager.generateKey;
+import static ru.mail.kievsan.cloud_storage_api.security.JwtSecretKeysManager.getSigningKey;
 
 @Slf4j
 @RequiredArgsConstructor

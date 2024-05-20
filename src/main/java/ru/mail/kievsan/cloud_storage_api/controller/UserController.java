@@ -12,7 +12,7 @@ import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
-import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
@@ -27,7 +27,7 @@ public class UserController {
 
     private final UserService service;
     private final UserProvider userProvider;
-    private final JWTUserDetails userDetails;
+    private final JwtUserDetails userDetails;
 
     @PermitAll
     @PostMapping

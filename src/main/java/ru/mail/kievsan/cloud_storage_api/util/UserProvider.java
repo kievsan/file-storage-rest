@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
-import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 
 import java.util.function.Consumer;
 
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 @AllArgsConstructor
 public class UserProvider {
 
-    public final JWTUserDetails userDetails;
+    public final JwtUserDetails userDetails;
 
     public User trueUser(String jwt, String logMsg, String logErr, Consumer<String> logger) throws UnauthorizedUserException {
         log.info(" {}:  {}", logMsg, userDetails.presentAuthenticated());

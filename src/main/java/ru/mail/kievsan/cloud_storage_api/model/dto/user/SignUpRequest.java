@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
+import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 
 @Data
 @Builder
@@ -31,4 +32,11 @@ public class SignUpRequest { // Запрос на регистрацию
 
     @NotBlank(message = "role не может быть пустой!")
     private Role role;
+
+    public SignUpRequest(User user) {
+        nickname = user.getNickname();
+        email = user.getEmail();
+        password = user.getPassword();
+        role = user.getRole();
+    }
 }

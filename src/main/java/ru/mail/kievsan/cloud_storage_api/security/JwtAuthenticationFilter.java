@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     static String className = ILogUtils.className_.apply(JwtAuthenticationFilter.class);
 
-    private final JWTUserDetails details;
+    private final JwtUserDetails details;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,

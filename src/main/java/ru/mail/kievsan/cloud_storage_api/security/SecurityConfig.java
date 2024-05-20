@@ -73,7 +73,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authEntryPoint)
                         .accessDeniedPage(LOGIN_URI)
                 );
-        http.securityContext((context) -> context.securityContextRepository(new HttpSessionSecurityContextRepository()));
+//        http.securityContext((context) -> context.securityContextRepository(new HttpSessionSecurityContextRepository()));
         return http.build();
     }
 }

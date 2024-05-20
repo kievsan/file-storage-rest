@@ -1,8 +1,7 @@
 package ru.mail.kievsan.cloud_storage_api.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.*;
 
@@ -20,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,13 +28,14 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
+import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 import ru.mail.kievsan.cloud_storage_api.security.*;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
@@ -53,11 +52,13 @@ public class UserControllerUnitTests {
     @MockBean
     UserService userService;
     @MockBean
+    UserJPARepo userRepo;
+    @MockBean
     JwtProvider jwtProvider;
     @MockBean
     UserProvider userProvider;
     @MockBean
-    JWTUserDetails userDetails;
+    JwtUserDetails userDetails;
     @MockBean
     JwtAuthenticationEntryPoint entryPoint;
 
@@ -82,12 +83,13 @@ public class UserControllerUnitTests {
     public void runTest() {
         System.out.println("Starting new test " + this);
         testUser = newUser();
+        testResponse = new SignUpResponse(testUser);
 
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         Key signingKey = Keys.hmacShaKeyFor(keyBytes);
-        auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+        //auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         jwt = Jwts.builder()
-                .claim("authorities", auth)
+                //.claim("authorities", auth)
                 .subject(testUser.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
@@ -101,6 +103,8 @@ public class UserControllerUnitTests {
         Mockito.when(userDetails.presentJWT(Mockito.anyString()))
                 .thenReturn(jwt.substring(0,jwt.length()/10) + "..."); //+++++ Mock
 
+        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
+
         log.info("test AUTH:  '{}'", auth);
         log.info("test JWT:  '{}'", userDetails.presentJWT(jwt));
     }
@@ -112,9 +116,106 @@ public class UserControllerUnitTests {
     }
 
     @Test
+    public void getOwner() throws Exception {
+        Mockito.when(userService.getCurrentUser(Mockito.any())).thenReturn(testResponse); //+++++ Mock
+
+        var mockRequest = get(USER_URI)
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getUser() throws Exception {
+        testUser.setRole(Role.ADMIN);
+        testResponse.setRole(Role.ADMIN);
+
+        Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
+
+        var mockRequest = get(USER_URI + "/1")
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getUserGetForbiddenErrIfIamIsNotAdmin() throws Exception {
+        Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
+
+        var mockRequest = get(USER_URI + "/1")
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void delOwner() throws Exception {
+        var mockRequest = delete(USER_URI)
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void delOwnerGetForbiddenErrIfIamIsStarterAdmin() throws Exception {
+        testUser.setNickname("starter");
+        testUser.setRole(Role.ADMIN);
+
+        var mockRequest = delete(USER_URI)
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void delUser() throws Exception {
+        testUser.setRole(Role.ADMIN);
+
+        var mockRequest = delete(USER_URI + "/1")
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void delUserGetForbiddenErrIfIamIsNotAdmin() throws Exception {
+        var mockRequest = delete(USER_URI + "/1")
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void delUserGetForbiddenErrIfTargetIsStarterAdmin() throws Exception {
+        var starterAdmin = newStarterAdmin();
+
+        Mockito.when(userRepo.findById(Mockito.anyLong())).thenReturn(Optional.of(starterAdmin)); //+++++ Mock
+
+        var mockRequest = delete(USER_URI + "/1")
+                .header("auth-token", "Bearer " + jwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void register() throws Exception {
-        var testRequest = new SignUpRequest(testUser.getNickname(), testUser.getEmail(), testUser.getPassword(), testUser.getRole());
-        testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testUser.getEmail(), testUser.getRole());
+        var testRequest = new SignUpRequest(testUser);
 
         Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
@@ -153,6 +254,16 @@ public class UserControllerUnitTests {
                 .email("testuser@mail.ru")
                 .password("password")
                 .role(Role.USER)
+                .enabled(true)
+                .build();
+    }
+
+    private User newStarterAdmin() {
+        return User.builder()
+                .nickname("starter")
+                .email("admin.starter@gmail.ru")
+                .password("password")
+                .role(Role.ADMIN)
                 .enabled(true)
                 .build();
     }

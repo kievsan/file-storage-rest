@@ -68,7 +68,7 @@ public class UserService {
 
         User user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
 
-        if (user.getNickname().equals("starter")) {
+        if (user.getNickname().equalsIgnoreCase("starter")) {
             throw new UserRegistrationException("Can't get the 'starter' user data");
         }
 
@@ -83,7 +83,7 @@ public class UserService {
     }
 
     public SignUpResponse getCurrentUser(User user) throws UserNotFoundException {
-        if (user.getNickname().equals("starter")) {
+        if (user.getNickname().equalsIgnoreCase("starter")) {
             throw new UserRegistrationException("Can't get the 'starter' user data");
         }
         log.info("Success: got owner. User {} ({})", user.getUsername(), user.getNickname());
@@ -92,7 +92,7 @@ public class UserService {
 
     @Transactional
     public SignUpResponse updateUser(UpdateRequest req, User user) throws UserRegistrationException {
-        if (user.getNickname().equals("starter")) {
+        if (user.getNickname().equalsIgnoreCase("starter")) {
             throw new UserRegistrationException("Can't update the 'starter' user");
         }
 
@@ -113,7 +113,7 @@ public class UserService {
     }
 
     @Transactional
-    public void delUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
+    public void delUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException, UserRegistrationException {
         var exception = getNoRightsException(currentUser.getNickname(), Role.ADMIN, "to delete a user", "delUserById");
 
         if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority(Role.ADMIN.name()))) {
@@ -122,7 +122,7 @@ public class UserService {
 
         var user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
 
-        if (user.getNickname().equals("starter")) {
+        if (user.getNickname().equalsIgnoreCase("starter")) {
             throw new UserRegistrationException("Can't del the 'starter' user");
         }
 
@@ -138,8 +138,8 @@ public class UserService {
     }
 
     @Transactional
-    public void delCurrentUser(User user) {
-        if (user.getNickname().equals("starter")) {
+    public void delCurrentUser(User user) throws UserRegistrationException {
+        if (user.getNickname().equalsIgnoreCase("starter")) {
             throw new UserRegistrationException("Can't del the 'starter' user");
         }
         userRepo.delete(user);

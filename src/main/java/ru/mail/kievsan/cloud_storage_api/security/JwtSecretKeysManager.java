@@ -7,7 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Base64;
 
-public class JWTSecretKeysManager {
+public class JwtSecretKeysManager {
 
     public static void main(String[] args) {
         String secretKey = generateKey();
