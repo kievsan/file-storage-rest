@@ -83,7 +83,7 @@ public class UserControllerUnitTests {
     public void runTest() {
         System.out.println("Starting new test " + this);
         testUser = newUser();
-        testJwt = newJwt(testUser);
+        testJwt = newJwt();
         testResponse = new SignUpResponse(testUser);
     }
 
@@ -110,7 +110,7 @@ public class UserControllerUnitTests {
     @Test
     public void getUser() throws Exception {
         testUser.setRole(Role.ADMIN);
-        testJwt = newJwt(testUser);
+        testJwt = newJwt();
         testResponse.setRole(Role.ADMIN);
 
         Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
@@ -151,7 +151,7 @@ public class UserControllerUnitTests {
     @Test
     public void delOwnerGetForbiddenErrIfIamStarterAdmin() throws Exception {
         testUser = newStarterAdmin();
-        testJwt = newJwt(testUser);
+        testJwt = newJwt();
 
         mockAuthorize();
         var mockRequest = delete(USER_URI)
@@ -165,7 +165,7 @@ public class UserControllerUnitTests {
     @Test
     public void delUser() throws Exception {
         testUser.setRole(Role.ADMIN);
-        testJwt = newJwt(testUser);
+        testJwt = newJwt();
 
         mockAuthorize();
         var mockRequest = delete(USER_URI + "/1")
@@ -177,7 +177,7 @@ public class UserControllerUnitTests {
     }
 
     @Test
-    public void delUserGetForbiddenErrIfIamIsNotAdmin() throws Exception {
+    public void delUserGetForbiddenErrIfIamNotAdmin() throws Exception {
         mockAuthorize();
         var mockRequest = delete(USER_URI + "/1")
                 .header("auth-token", "Bearer " + testJwt)
@@ -258,14 +258,13 @@ public class UserControllerUnitTests {
                 .build();
     }
 
-
-    public String newJwt(UserDetails user) {
+    public String newJwt() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         Key signingKey = Keys.hmacShaKeyFor(keyBytes);
         //auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         return Jwts.builder()
                 //.claim("authorities", auth)
-                .subject(user.getUsername())
+                .subject(testUser.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
                 .signWith(signingKey)
