@@ -42,6 +42,15 @@ public class UserController {
         }
     }
 
+    @PutMapping
+    public ResponseEntity<SignUpResponse> updateUser(@RequestHeader("auth-token") String authToken,
+                                                     @RequestBody UpdateRequest request) {
+        return ResponseEntity.ok(service.updateUser(request,
+                userProvider.trueUser(authToken,
+                        "%s, update %s".formatted(logTitle, userDetails.presentAuthenticated()),
+                        "Update user error", log::error)));
+    }
+
 //    @RolesAllowed({"ROLE_ADMIN"})  // блокирует любых пользователей ??????????!!! ПОЧЕМУ с Role.ADMIN тоже блокирует?
 //    @Secured({"ROLE_ADMIN"})      // блокирует любых пользователей ??????????!!!
     @GetMapping("/{id}")
@@ -55,15 +64,6 @@ public class UserController {
     public ResponseEntity<SignUpResponse> getOwner(@RequestHeader(name = "auth-token") String authToken) {
         return ResponseEntity.ok(service.getCurrentUser(
                 userProvider.trueUser(authToken, logTitle, "Get owner error", log::error)));
-    }
-
-    @PutMapping
-    public ResponseEntity<SignUpResponse> updateUser(@RequestHeader("auth-token") String authToken,
-                                        @RequestBody UpdateRequest request) {
-        return ResponseEntity.ok(service.updateUser(request,
-                userProvider.trueUser(authToken,
-                        "%s, update %s".formatted(logTitle, userDetails.presentAuthenticated()),
-                        "Update user error", log::error)));
     }
 
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")  // блокирует любых пользователей ??????????!!!

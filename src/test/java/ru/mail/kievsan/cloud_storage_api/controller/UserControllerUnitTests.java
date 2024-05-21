@@ -64,7 +64,7 @@ public class UserControllerUnitTests {
 
     User testUser;
     SignUpResponse testResponse;
-    String auth, jwt;
+    String testJwt;
     final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
     final long tokenLifetime = 600000;
 
@@ -83,44 +83,24 @@ public class UserControllerUnitTests {
     public void runTest() {
         System.out.println("Starting new test " + this);
         testUser = newUser();
+        testJwt = newJwt(testUser);
         testResponse = new SignUpResponse(testUser);
-
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        Key signingKey = Keys.hmacShaKeyFor(keyBytes);
-        //auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-        jwt = Jwts.builder()
-                //.claim("authorities", auth)
-                .subject(testUser.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
-                .signWith(signingKey)
-                .compact();
-        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(jwt); //+++++ Mock
-
-        Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
-        Mockito.when(userDetails.presentAuthenticated())
-                .thenReturn("user  %s, %s".formatted(testUser.getUsername(), auth)); //+++++ Mock
-        Mockito.when(userDetails.presentJWT(Mockito.anyString()))
-                .thenReturn(jwt.substring(0,jwt.length()/10) + "..."); //+++++ Mock
-
-        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
-
-        log.info("test AUTH:  '{}'", auth);
-        log.info("test JWT:  '{}'", userDetails.presentJWT(jwt));
     }
 
     @AfterEach
     public void finishTest() {
         testUser = null;
         testResponse = null;
+        testJwt = null;
     }
 
     @Test
     public void getOwner() throws Exception {
         Mockito.when(userService.getCurrentUser(Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
+        mockAuthorize();
         var mockRequest = get(USER_URI)
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -130,12 +110,14 @@ public class UserControllerUnitTests {
     @Test
     public void getUser() throws Exception {
         testUser.setRole(Role.ADMIN);
+        testJwt = newJwt(testUser);
         testResponse.setRole(Role.ADMIN);
 
         Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
+        mockAuthorize();
         var mockRequest = get(USER_URI + "/1")
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -146,8 +128,9 @@ public class UserControllerUnitTests {
     public void getUserGetForbiddenErrIfIamIsNotAdmin() throws Exception {
         Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
+        mockAuthorize();
         var mockRequest = get(USER_URI + "/1")
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -156,8 +139,9 @@ public class UserControllerUnitTests {
 
     @Test
     public void delOwner() throws Exception {
+        mockAuthorize();
         var mockRequest = delete(USER_URI)
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -165,12 +149,13 @@ public class UserControllerUnitTests {
     }
 
     @Test
-    public void delOwnerGetForbiddenErrIfIamIsStarterAdmin() throws Exception {
-        testUser.setNickname("starter");
-        testUser.setRole(Role.ADMIN);
+    public void delOwnerGetForbiddenErrIfIamStarterAdmin() throws Exception {
+        testUser = newStarterAdmin();
+        testJwt = newJwt(testUser);
 
+        mockAuthorize();
         var mockRequest = delete(USER_URI)
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -180,9 +165,11 @@ public class UserControllerUnitTests {
     @Test
     public void delUser() throws Exception {
         testUser.setRole(Role.ADMIN);
+        testJwt = newJwt(testUser);
 
+        mockAuthorize();
         var mockRequest = delete(USER_URI + "/1")
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -191,8 +178,9 @@ public class UserControllerUnitTests {
 
     @Test
     public void delUserGetForbiddenErrIfIamIsNotAdmin() throws Exception {
+        mockAuthorize();
         var mockRequest = delete(USER_URI + "/1")
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -200,13 +188,13 @@ public class UserControllerUnitTests {
     }
 
     @Test
-    public void delUserGetForbiddenErrIfTargetIsStarterAdmin() throws Exception {
-        var starterAdmin = newStarterAdmin();
+    public void delUserGetForbiddenErrIfDeletingIsStarterAdmin() throws Exception {
+        var deletingUser = newStarterAdmin();
+        Mockito.when(userRepo.findById(Mockito.anyLong())).thenReturn(Optional.of(deletingUser)); //+++++ Mock
 
-        Mockito.when(userRepo.findById(Mockito.anyLong())).thenReturn(Optional.of(starterAdmin)); //+++++ Mock
-
+        mockAuthorize();
         var mockRequest = delete(USER_URI + "/1")
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
         mockMvc.perform(mockRequest)
@@ -219,6 +207,7 @@ public class UserControllerUnitTests {
 
         Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
+        mockAuthorize();
         var mockRequest = post(SIGN_UP_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(testRequest))
@@ -237,8 +226,9 @@ public class UserControllerUnitTests {
 
         Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
+        mockAuthorize();
         var mockRequest = put(USER_URI)
-                .header("auth-token", "Bearer " + jwt)
+                .header("auth-token", "Bearer " + testJwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(testRequest))
                 .with(csrf())
@@ -266,5 +256,32 @@ public class UserControllerUnitTests {
                 .role(Role.ADMIN)
                 .enabled(true)
                 .build();
+    }
+
+
+    public String newJwt(UserDetails user) {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        Key signingKey = Keys.hmacShaKeyFor(keyBytes);
+        //auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+        return Jwts.builder()
+                //.claim("authorities", auth)
+                .subject(user.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + tokenLifetime))
+                .signWith(signingKey)
+                .compact();
+    }
+
+    public void mockAuthorize() {
+        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(testJwt); //+++++ Mock
+
+        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
+        Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
+        Mockito.when(userDetails.presentAuthenticated())
+                .thenReturn("user  %s, %s".formatted(testUser.getUsername(), testUser.getAuthorities())); //+++++ Mock
+        Mockito.when(userDetails.presentJWT(Mockito.anyString()))
+                .thenReturn(testJwt.substring(0, testJwt.length()/10) + "..."); //+++++ Mock
+
+        log.info("testing user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
     }
 }

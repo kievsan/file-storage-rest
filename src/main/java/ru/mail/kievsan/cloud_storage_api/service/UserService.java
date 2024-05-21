@@ -139,7 +139,8 @@ public class UserService {
 
     @Transactional
     public void delCurrentUser(User user) throws UserRegistrationException {
-        if (user.getNickname().equalsIgnoreCase("starter")) {
+        var nickname = user.getNickname();
+        if (nickname.equalsIgnoreCase("starter")) {
             throw new UserRegistrationException("Can't del the 'starter' user");
         }
         userRepo.delete(user);
