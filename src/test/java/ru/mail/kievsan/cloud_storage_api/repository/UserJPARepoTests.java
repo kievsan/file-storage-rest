@@ -95,13 +95,21 @@ public class UserJPARepoTests {
     void updateUserByEmailAndPassword() {
         String newEmail = "newUsername@mail.ru";
         String newPassword = "newPassword";
-        User user = userRepo.findByEmail(testUser.getEmail()).get();
 
-        userRepo.updateUserByEmailAndPassword(newEmail, newPassword, user);
+        userRepo.updateUserByEmailAndPassword(newEmail, newPassword, testUser);
         User updatedUser = userRepo.findByEmail(newEmail).orElse(null);
 
         assertNotNull(updatedUser);
-        assertEquals(user, updatedUser);
+        assertEquals(testUser, updatedUser);
+    }
+
+    @Test
+    void updateUserByRole() {
+        userRepo.updateUserByRole(Role.ADMIN, testUser);
+        User updatedUser = userRepo.findById(testUser.getId()).orElse(null);
+
+        assertNotNull(updatedUser);
+        assertEquals(testUser, updatedUser);
     }
 
 }

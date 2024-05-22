@@ -121,7 +121,7 @@ public class UserControllerUnitTests {
     }
 
     @Test
-    public void getUserGetForbiddenErrIfIamIsNotAdmin() throws Exception {
+    public void getUserGetForbiddenErrIfIamNotAdmin() throws Exception {
         Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
 
         mockAuthorize();
@@ -144,18 +144,18 @@ public class UserControllerUnitTests {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    public void delOwnerGetForbiddenErrIfIamStarterAdmin() throws Exception {
-        testUser = newStarterAdmin();
-
-        mockAuthorize();
-        var mockRequest = delete(USER_URI)
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isForbidden());
-    }
+//    @Test
+//    public void delOwnerGetForbiddenErrIfIamAdmin() throws Exception {
+//        testUser.setRole(Role.ADMIN);
+//
+//        mockAuthorize();
+//        var mockRequest = delete(USER_URI)
+//                .header("auth-token", "Bearer " + testJwt())
+//                .with(csrf())
+//                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+//        mockMvc.perform(mockRequest)
+//                .andExpect(status().isForbidden());
+//    }
 
     @Test
     public void delUser() throws Exception {

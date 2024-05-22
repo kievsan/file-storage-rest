@@ -59,6 +59,24 @@ public class UserService {
         log.info("SUCCESS! {}", msg);
     }
 
+    @Transactional
+    public SignUpResponse updateUser(UpdateRequest req, User user) throws UserRegistrationException {
+        String newEmail = req.getEmail() == null || req.getEmail().isBlank() ? user.getEmail() : req.getEmail().trim();
+        String newPassword = req.getPassword() == null || req.getPassword().isEmpty() ? user.getPassword() : encoder.encode(req.getPassword());
+
+        if (!newEmail.equals(user.getEmail()) && userRepo.existsByEmail(newEmail)) {
+            String errMsg = String.format("User with email '%s' already exists, the update is not possible!", newEmail);
+            log.error("{}  {} ('{}'): {}", logErrTitle, user.getEmail(), user.getNickname(), errMsg);
+            throw new UserRegistrationException(errMsg, null, null, null, "'updateUser service'");
+        }
+
+        userRepo.updateUserByEmailAndPassword(newEmail, newPassword, user);
+
+        log.info("SUCCESS update user '{}'  ->  email: '{}', password: {}", user.getNickname(), newEmail, newPassword);
+        user.setEmail(newEmail);
+        return new SignUpResponse(user);
+    }
+
     public SignUpResponse getUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
         var exception = getNoRightsException(currentUser.getNickname(), Role.ADMIN, "to get a user", "getUserById");
 
@@ -83,32 +101,7 @@ public class UserService {
     }
 
     public SignUpResponse getCurrentUser(User user) throws UserNotFoundException {
-        if (user.getNickname().equalsIgnoreCase("starter")) {
-            throw new UserRegistrationException("Can't get the 'starter' user data");
-        }
         log.info("Success: got owner. User {} ({})", user.getUsername(), user.getNickname());
-        return new SignUpResponse(user);
-    }
-
-    @Transactional
-    public SignUpResponse updateUser(UpdateRequest req, User user) throws UserRegistrationException {
-        if (user.getNickname().equalsIgnoreCase("starter")) {
-            throw new UserRegistrationException("Can't update the 'starter' user");
-        }
-
-        String newEmail = req.getEmail() == null || req.getEmail().isBlank() ? user.getEmail() : req.getEmail().trim();
-        String newPassword = req.getPassword() == null || req.getPassword().isEmpty() ? user.getPassword() : encoder.encode(req.getPassword());
-
-        if (!newEmail.equals(user.getEmail()) && userRepo.existsByEmail(newEmail)) {
-            String errMsg = String.format("User with email '%s' already exists, the update is not possible!", newEmail);
-            log.error("{}  {} ('{}'): {}", logErrTitle, user.getEmail(), user.getNickname(), errMsg);
-            throw new UserRegistrationException(errMsg, null, null, null, "'updateUser service'");
-        }
-
-        userRepo.updateUserByEmailAndPassword(newEmail, newPassword, user);
-
-        log.info("SUCCESS update user '{}'  ->  email: '{}', password: {}", user.getNickname(), newEmail, newPassword);
-        user.setEmail(newEmail);
         return new SignUpResponse(user);
     }
 
@@ -139,9 +132,11 @@ public class UserService {
 
     @Transactional
     public void delCurrentUser(User user) throws UserRegistrationException {
-        var nickname = user.getNickname();
-        if (nickname.equalsIgnoreCase("starter")) {
-            throw new UserRegistrationException("Can't del the 'starter' user");
+//        if (user.getNickname().equalsIgnoreCase("starter")) {
+//            throw new UserRegistrationException("Can't del the 'starter' user");
+//        }
+        if (user.getRole().equals(Role.ADMIN)) {
+            throw new UserRegistrationException("Can't del an ADMIN");
         }
         userRepo.delete(user);
         log.info("Success: deleted owner, user {} ({})", user.getUsername(), user.getNickname());
