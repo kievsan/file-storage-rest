@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthRequest { // Запрос на аутентификацию
 
-    private final int max = 30;
+    static final int max = 100;
 
     @Size(min = 3, max = max, message = "login от 3 до " + max + " символов")
     @NotBlank(message = "login не может быть пустым!")

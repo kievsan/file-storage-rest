@@ -1,0 +1,22 @@
+# примеры API-запросов
+
+ @baseUrl = http://localhost:5055/api/v1/file
+
+###
+
+# Переименование файла:
+PUT {{baseUrl}}?filename=example1.txt
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0ODc4OTAzLCJleHAiOjE3MTQ4Nzk1MDN9.syyiuBUVBWE21XjUO9PM_Ca9_tBCU4lQ8VWplq1AmpAV54b6k_8e0olCmw_UGYK1
+Content-Type: application/json
+
+{
+  "name": "example2.txt"
+}
+
+###
+
+# Удаление файла:
+DELETE {{baseUrl}}?filename=example2.txt
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE0ODc4OTAzLCJleHAiOjE3MTQ4Nzk1MDN9.syyiuBUVBWE21XjUO9PM_Ca9_tBCU4lQ8VWplq1AmpAV54b6k_8e0olCmw_UGYK1
+
+###

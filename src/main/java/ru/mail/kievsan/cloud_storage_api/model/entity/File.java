@@ -29,7 +29,7 @@ public class File {
     @Column(nullable = false)
     private Long size;
 
-    @Lob
+    //@Lob
     @Column(nullable = false)
     private byte[] content;
 

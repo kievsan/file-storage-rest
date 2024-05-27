@@ -23,7 +23,6 @@ public class APIStarter implements CommandLineRunner {
                 .password(encoder.encode("7410"))
                 .role(Role.ADMIN)
                 .enabled(true)
-                .build(),
-                "User 'admin.starter@gmail.ru' ");
+                .build());
     }
 }

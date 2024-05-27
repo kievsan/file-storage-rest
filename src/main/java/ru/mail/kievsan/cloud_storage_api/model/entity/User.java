@@ -1,6 +1,8 @@
 package ru.mail.kievsan.cloud_storage_api.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,9 +26,11 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 30, nullable = false, unique = true)
+    @NotBlank
+    @Column(length = 25, nullable = false, unique = true)
     private String nickname;
 
+    @Email
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -37,19 +41,24 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
     private boolean enabled;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<File> userFiles;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    public void setUsername(String username) {
+        this.email = username;
     }
 
     @Override

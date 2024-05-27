@@ -1,0 +1,46 @@
+# примеры API-запросов
+
+ @baseUrl = http://localhost:5055/api/v1
+
+###
+
+# Аутентификация предустановленного суперадмина 'starter':
+# токен: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzM4Njg1LCJleHAiOjE3MTU3MzkyODV9.ijU-lma0eZx8N3lsIWi6F39qwW2OqdTMUagUqpgp007uv9JzRpdYX_rj-qEJQMpL
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "login": "admin.starter@gmail.ru" ,
+  "password": "7410"
+}
+
+###
+
+# Аутентификация
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "login": "knhel7@gmail.com" ,
+  "password": "123456"
+}
+
+###
+
+# Аутентификация
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "login": "knhel77@gmail.com" ,
+  "password": "1234567"
+}
+
+###
+
+# Выход из учетной записи
+POST {{baseUrl}}/logout
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1NzQyMjU3LCJleHAiOjE3MTU3NDI4NTd9.XpSU-fBiuqtyJzXoCtAzKJ-3DnrM0Jn_6TZLR8VSWIEFwwue8GfUnDKKkouegDvK
+Content-Type: application/json
+
+###

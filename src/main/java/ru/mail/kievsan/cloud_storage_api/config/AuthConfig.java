@@ -9,13 +9,13 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.mail.kievsan.cloud_storage_api.security.JWTUserDetails;
+import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 
 @Configuration
 @RequiredArgsConstructor
 public class AuthConfig {
 
-    private final JWTUserDetails jwtUserDetails;
+    private final JwtUserDetails jwtUserDetails;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -35,5 +35,4 @@ public class AuthConfig {
         return new BCryptPasswordEncoder();
 //        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
 }

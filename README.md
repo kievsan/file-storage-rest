@@ -4,7 +4,7 @@
 
 Сервис предназначен для загрузки файлов и вывода списка уже загруженных файлов пользователя.
 
-REST-сервис работает на http://localhost:5060/api/v1.
+REST-сервис работает на http://localhost:5055/api/v1.
 
 ---
 
@@ -20,6 +20,3 @@ REST-сервис работает на http://localhost:5060/api/v1.
 #### docker compose up -d
 
 ---
-
-## FRONT:
-https://github.com/kievsan/jd-40-homeworks/tree/master/diploma/netology-diplom-frontend
