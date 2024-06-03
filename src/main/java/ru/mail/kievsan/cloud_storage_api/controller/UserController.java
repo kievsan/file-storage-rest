@@ -30,6 +30,7 @@ public class UserController {
     private final JwtUserDetails userDetails;
 
     @PermitAll
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping
     public ResponseEntity<SignUpResponse> register(@RequestBody SignUpRequest request,
                                                    HttpServletRequest httpRequest) {
@@ -42,6 +43,7 @@ public class UserController {
         }
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping
     public ResponseEntity<SignUpResponse> updateUser(@RequestHeader("auth-token") String authToken,
                                                      @RequestBody UpdateRequest request) {
@@ -53,6 +55,7 @@ public class UserController {
 
 //    @RolesAllowed({"ROLE_ADMIN"})  // блокирует любых пользователей ??????????!!! ПОЧЕМУ с Role.ADMIN тоже блокирует?
 //    @Secured({"ROLE_ADMIN"})      // блокирует любых пользователей ??????????!!!
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     public ResponseEntity<SignUpResponse> getUser(@PathVariable @Positive Long id,
                                                   @RequestHeader(name = "auth-token") String authToken) {
@@ -60,6 +63,7 @@ public class UserController {
                 userProvider.trueUser(authToken,logTitle, "Get User error", log::error)));
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ResponseEntity<SignUpResponse> getOwner(@RequestHeader(name = "auth-token") String authToken) {
         return ResponseEntity.ok(service.getCurrentUser(
@@ -67,12 +71,14 @@ public class UserController {
     }
 
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")  // блокирует любых пользователей ??????????!!!
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delUser(@PathVariable @Positive Long id, @RequestHeader(name = "auth-token") String authToken) {
         service.delUserById(id, userProvider.trueUser(authToken,logTitle, "Del User error", log::error));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping
     public ResponseEntity<?> delOwner(@RequestHeader(name = "auth-token") String authToken) {
         service.delCurrentUser(userProvider.trueUser(authToken, logTitle, "Del owner error", log::error));

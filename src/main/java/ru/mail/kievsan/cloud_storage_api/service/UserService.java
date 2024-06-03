@@ -65,7 +65,7 @@ public class UserService {
         String newPassword = req.getPassword() == null || req.getPassword().isEmpty() ? user.getPassword() : encoder.encode(req.getPassword());
 
         if (!newEmail.equals(user.getEmail()) && userRepo.existsByEmail(newEmail)) {
-            String errMsg = String.format("User with email '%s' already exists, the update is not possible!", newEmail);
+            String errMsg = String.format("User with email '%s' already exists, the updating is not possible!", newEmail);
             log.error("{}  {} ('{}'): {}", logErrTitle, user.getEmail(), user.getNickname(), errMsg);
             throw new UserRegistrationException(errMsg, null, null, null, "'updateUser service'");
         }
@@ -126,20 +126,24 @@ public class UserService {
 
         userRepo.deleteById(id);
 
-        log.info("Success: deleted user '{}' by id={}. Current user {} ({}), {}", user.getNickname(), id,
+        log.info("Success: deleted user '{}' by id={}. Current user {} ('{}'), {}", user.getNickname(), id,
                 currentUser.getUsername(), currentUser.getNickname(), currentUser.getAuthorities());
     }
 
     @Transactional
     public void delCurrentUser(User user) throws UserRegistrationException {
-//        if (user.getNickname().equalsIgnoreCase("starter")) {
-//            throw new UserRegistrationException("Can't del the 'starter' user");
-//        }
-        if (user.getRole().equals(Role.ADMIN)) {
-            throw new UserRegistrationException("Can't del an ADMIN");
+        var exception = getNoRightsException(user.getNickname(), Role.ADMIN, "to delete an ADMIN", "delCurrentUser");
+
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority(Role.ADMIN.name()))) {
+            log.warn("Has no rights: deleting owner - ADMIN ('{}'), {}. Can't del an ADMIN !", user.getNickname(), user.getUsername()); //
+            throw exception;
         }
+//        if (user.getRole().equals(Role.ADMIN)) {
+//            throw new UserRegistrationException("Can't del an ADMIN");
+//        }
+
         userRepo.delete(user);
-        log.info("Success: deleted owner, user {} ({})", user.getUsername(), user.getNickname());
+        log.info("Success: deleted owner, user {} ('{}')", user.getUsername(), user.getNickname());
     }
 
     public NoRightsException getNoRightsException(String username, Role role, String action, String service) {

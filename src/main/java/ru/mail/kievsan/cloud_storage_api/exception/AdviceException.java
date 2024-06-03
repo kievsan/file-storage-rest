@@ -9,6 +9,8 @@ import ru.mail.kievsan.cloud_storage_api.util.ILogUtils;
 @Setter
 public class AdviceException extends RuntimeException {
 
+    private final Class<?> exceptionClass = this.getClass();
+
     private final HttpStatus httpStatus;
     private final String controller;
     private final String entryPoint;

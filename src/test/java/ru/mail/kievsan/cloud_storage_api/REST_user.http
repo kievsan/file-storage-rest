@@ -19,7 +19,7 @@ Content-Type: application/json
 
 # Регистрация учетной записи администратора супер-админом
 POST {{baseUrl}}/user
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJhdXRoIjoiQURNSU4iLCJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1OTE4MjcxLCJleHAiOjE3MTU5MTg4NzF9.AsbiF52d961R9249AkuoFQhgl1tkELHgH9FucEbyNx36PHsSUAvEhVNbSD4E01b3
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJhdXRob3JpdGllcyI6IkFETUlOIiwic3ViIjoiYWRtaW4uc3RhcnRlckBnbWFpbC5ydSIsImlhdCI6MTcxNzIxMTg4MiwiZXhwIjoxNzE3MjEyNDgyfQ.NqmmwRz-wmD-iB1xl2dV3Yqx5beerQJ0zVpBJrU6SBgIFTl37blCG5Ui4awLsbV3
 Content-Type: application/json
 
 {
@@ -59,14 +59,14 @@ Content-Type: application/json
 
 # Удалить свою учетную запись
 DELETE {{baseUrl}}/user
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJhdXRob3JpdGllcyI6IkFETUlOIiwic3ViIjoiYWRtaW4uc3RhcnRlckBnbWFpbC5ydSIsImlhdCI6MTcxNjI5NDAyNSwiZXhwIjoxNzE2Mjk0NjI1fQ.ATrP8_HcbrSGCVIKXbL13rv_geQdXJ1eHbsDCiLH286HzvNxCiLFOVYXHUNySNrf
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJhdXRob3JpdGllcyI6IkFETUlOIiwic3ViIjoiYWRtaW4uc3RhcnRlckBnbWFpbC5ydSIsImlhdCI6MTcxNzIxMTg4MiwiZXhwIjoxNzE3MjEyNDgyfQ.NqmmwRz-wmD-iB1xl2dV3Yqx5beerQJ0zVpBJrU6SBgIFTl37blCG5Ui4awLsbV3
 Content-Type: application/json
 
 ###
 
 # Удалить учетную запись по id
-DELETE {{baseUrl}}/user/2
-auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbi5zdGFydGVyQGdtYWlsLnJ1IiwiaWF0IjoxNzE1Nzg4NTc0LCJleHAiOjE3MTU3ODkxNzR9.Ahy0bPxsezjGHH8sw4OYkp4eh2IxXbF5zV-Fexrqx31aidFoOJ7oC2t6ciJ3ReNi
+DELETE {{baseUrl}}/user/1
+auth-token: Bearer eyJhbGciOiJIUzM4NCJ9.eyJhdXRob3JpdGllcyI6IkFETUlOIiwic3ViIjoia25oZWw3N0BnbWFpbC5jb20iLCJpYXQiOjE3MTcyMTIyMjMsImV4cCI6MTcxNzIxMjgyM30.E0L2RSB7Wr-3lmi8UGsSSQHzxR6RIscCNfEXfhbEokFXNjMIbeLG0ShhHQOScNjx
 Content-Type: application/json
 
 ###

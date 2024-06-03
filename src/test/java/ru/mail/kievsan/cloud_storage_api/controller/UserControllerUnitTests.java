@@ -19,11 +19,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
+import ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice.ExceptionHandlerAdvice;
+import ru.mail.kievsan.cloud_storage_api.exception.AdviceException;
+import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
+import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
+import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponseTests;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
@@ -36,6 +45,8 @@ import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
@@ -61,8 +72,11 @@ public class UserControllerUnitTests {
     JwtUserDetails userDetails;
     @MockBean
     JwtAuthenticationEntryPoint entryPoint;
+    @MockBean
+    ExceptionHandlerAdvice exceptionHandlerAdvice;
 
     User testUser;
+    String testJwt;
     SignUpResponse testResponse;
     final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
     final long tokenLifetime = 600000;
@@ -82,126 +96,85 @@ public class UserControllerUnitTests {
     public void runTest() {
         System.out.println("Starting new test " + this);
         testUser = newUser();
+        testJwt = newJwt();
         testResponse = new SignUpResponse(testUser);
     }
 
     @AfterEach
     public void finishTest() {
         testUser = null;
+        testJwt = null;
         testResponse = null;
     }
 
     @Test
     public void getOwner() throws Exception {
-        Mockito.when(userService.getCurrentUser(Mockito.any())).thenReturn(testResponse); //+++++ Mock
-
+        Mockito.when(userService.getCurrentUser(Mockito.any())).thenReturn(testResponse);
         mockAuthorize();
-        var mockRequest = get(USER_URI)
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk());
+        mockMvc.perform(mockRequest(get(USER_URI))).andExpect(status().isOk());
     }
 
     @Test
     public void getUser() throws Exception {
         testUser.setRole(Role.ADMIN);
+        testJwt = newJwt();
         testResponse.setRole(Role.ADMIN);
 
-        Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
-
+        Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse);
         mockAuthorize();
-        var mockRequest = get(USER_URI + "/1")
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk());
+
+        mockMvc.perform(mockRequest(get(USER_URI + "/1"))).andExpect(status().isOk());
     }
 
     @Test
     public void getUserGetForbiddenErrIfIamNotAdmin() throws Exception {
-        Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse); //+++++ Mock
-
+        Mockito.when(userService.getUserById(Mockito.anyLong(), Mockito.any())).thenReturn(testResponse);
         mockAuthorize();
-        var mockRequest = get(USER_URI + "/1")
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isForbidden());
+        mockMvc.perform(mockRequest(get(USER_URI + "/1"))).andExpect(status().isForbidden());
     }
 
     @Test
     public void delOwner() throws Exception {
         mockAuthorize();
-        var mockRequest = delete(USER_URI)
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk());
+        mockMvc.perform(mockRequest(delete(USER_URI))).andExpect(status().isOk());
     }
 
-//    @Test
-//    public void delOwnerGetForbiddenErrIfIamAdmin() throws Exception {
-//        testUser.setRole(Role.ADMIN);
-//
-//        mockAuthorize();
-//        var mockRequest = delete(USER_URI)
-//                .header("auth-token", "Bearer " + testJwt())
-//                .with(csrf())
-//                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-//        mockMvc.perform(mockRequest)
-//                .andExpect(status().isForbidden());
-//    }
+    @Test
+    public void delOwnerGetForbiddenErrIfIamAdmin() throws Exception {
+        testUser.setRole(Role.ADMIN); //        System.out.println(mapper.writeValueAsString(testUser));
+        testJwt = newJwt();
+        mockAuthorize();
+        mockMvc.perform(mockRequest(delete(USER_URI))).andExpect(status().isForbidden());
+    }
 
     @Test
     public void delUser() throws Exception {
         testUser.setRole(Role.ADMIN);
-
+        testJwt = newJwt();
         mockAuthorize();
-        var mockRequest = delete(USER_URI + "/1")
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk());
+        mockMvc.perform(mockRequest(delete(USER_URI + "/1"))).andExpect(status().isOk());
     }
 
     @Test
     public void delUserGetForbiddenErrIfIamNotAdmin() throws Exception {
         mockAuthorize();
-        var mockRequest = delete(USER_URI + "/1")
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isForbidden());
+        mockMvc.perform(mockRequest(delete(USER_URI + "/1"))).andExpect(status().isForbidden());
     }
 
     @Test
     public void delUserGetForbiddenErrIfDeletingIsStarterAdmin() throws Exception {
-        var deletingUser = newStarterAdmin();
-        Mockito.when(userRepo.findById(Mockito.anyLong())).thenReturn(Optional.of(deletingUser)); //+++++ Mock
-
+        Mockito.when(userRepo.findById(Mockito.anyLong())).thenReturn(Optional.of(newStarterAdmin()));
         mockAuthorize();
-        var mockRequest = delete(USER_URI + "/1")
-                .header("auth-token", "Bearer " + testJwt())
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isForbidden());
+        mockMvc.perform(mockRequest(delete(USER_URI + "/1"))).andExpect(status().isForbidden());
     }
 
     @Test
     public void register() throws Exception {
         var testRequest = new SignUpRequest(testUser);
 
-        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
-
+        Mockito.when(userService.register(Mockito.any(SignUpRequest.class), Mockito.any())).thenReturn(testResponse);
         mockAuthorize();
+
         var mockRequest = post(SIGN_UP_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(testRequest))
@@ -214,22 +187,59 @@ public class UserControllerUnitTests {
     }
 
     @Test
+    public void notRegister() throws Exception {
+        String errMsg = "The username is already in use, registration is not possible!";
+        testUser = newStarterAdmin();
+        testJwt = newJwt();
+        var testRequest = new SignUpRequest(testUser);
+        var ex = new UserRegistrationException(errMsg, null, null, null, "'register service'");
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
+
+        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerUserRegistrationErr(Mockito.any(ex.getClass()));
+        Mockito.doThrow(ex).when(userService).register(Mockito.any(SignUpRequest.class), Mockito.any());
+        mockAuthorize();
+
+        var mockRequest = post(SIGN_UP_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(testRequest))
+                .with(csrf());
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     public void edit() throws Exception {
         var testRequest = new UpdateRequest("new_" + testUser.getEmail(), "new_" + testUser.getPassword());
         testResponse = new SignUpResponse(testUser.getId(), testUser.getNickname(), testRequest.getEmail(), testUser.getRole());
 
-        Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse); //+++++ Mock
-
+        Mockito.when(userService.updateUser(Mockito.any(UpdateRequest.class), Mockito.any())).thenReturn(testResponse);
         mockAuthorize();
-        var mockRequest = put(USER_URI)
-                .header("auth-token", "Bearer " + testJwt())
+
+        var mockRequest = mockRequest(put(USER_URI))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(testRequest))
-                .with(csrf())
-                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
+                .content(mapper.writeValueAsString(testRequest));
         mockMvc.perform(mockRequest)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", Matchers.is(testRequest.getEmail())));
+    }
+
+    @Test
+    public void notEdit() throws Exception {
+        String newEmail = newStarterAdmin().getEmail();
+        String errMsg = String.format("User with email '%s' already exists, the updating is not possible!", newEmail);
+        var testRequest = new UpdateRequest(newEmail, "new_" + testUser.getPassword());
+        var ex = new UserRegistrationException(errMsg, null, null, null, "'register service'");
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
+
+        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerUserRegistrationErr(Mockito.any(ex.getClass()));
+        Mockito.doThrow(ex).when(userService).updateUser(Mockito.any(UpdateRequest.class), Mockito.any());
+        mockAuthorize();
+
+        var mockRequest = mockRequest(put(USER_URI))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(testRequest));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isUnprocessableEntity());
     }
 
     private User newUser() {
@@ -252,7 +262,7 @@ public class UserControllerUnitTests {
                 .build();
     }
 
-    public String testJwt() {
+    public String newJwt() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         Key signingKey = Keys.hmacShaKeyFor(keyBytes);
         //auth = testUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
@@ -266,15 +276,23 @@ public class UserControllerUnitTests {
     }
 
     public void mockAuthorize() {
-        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(testJwt()); //+++++ Mock
+        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(newJwt()); //+++++ Mock
 
         Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
         Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
         Mockito.when(userDetails.presentAuthenticated())
                 .thenReturn("user  %s, %s".formatted(testUser.getUsername(), testUser.getAuthorities())); //+++++ Mock
         Mockito.when(userDetails.presentJWT(Mockito.anyString()))
-                .thenReturn(testJwt().substring(0, testJwt().length()/10) + "..."); //+++++ Mock
+                .thenReturn(testJwt.substring(0, testJwt.length()/10)
+                        + "..." + testJwt.substring(testJwt.length() - 2)); //+++++ Mock
 
         log.info("testing user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
+    }
+
+    public MockHttpServletRequestBuilder mockRequest(MockHttpServletRequestBuilder entryPoint) throws Exception {
+        return entryPoint
+                .header("auth-token", "Bearer " + testJwt)
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(testUser));
     }
 }

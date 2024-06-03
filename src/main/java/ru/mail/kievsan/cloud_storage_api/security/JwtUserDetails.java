@@ -46,7 +46,8 @@ public class JwtUserDetails implements UserDetailsService {
     }
 
     public final String presentJWT(String jwt) {
-        return jwt == null || jwt.isBlank() ? "" : jwt.substring(0,jwt.length()/10) + "...";
+        return jwt == null || jwt.isBlank()
+                ? "" : jwt.substring(0,jwt.length()/10) + "..." + jwt.substring(jwt.length() - 2);
     }
 
     public final String presentAuthenticated() {
