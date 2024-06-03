@@ -21,18 +21,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice.ExceptionHandlerAdvice;
-import ru.mail.kievsan.cloud_storage_api.exception.AdviceException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
-import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponseTests;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
@@ -45,8 +41,6 @@ import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
