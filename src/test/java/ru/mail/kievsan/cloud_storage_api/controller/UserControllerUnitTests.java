@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice.ExceptionHandlerAdvice;
+import ru.mail.kievsan.cloud_storage_api.exception.NoRightsException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
@@ -83,12 +84,12 @@ public class UserControllerUnitTests {
 
     @AfterAll
     public static void testSuiteComplete() {
-        System.out.printf("'User' controller tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
+        System.out.printf("\n'User' controller tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
     }
 
     @BeforeEach
     public void runTest() {
-        System.out.println("Starting new test " + this);
+        System.out.println("\nStarting new test " + this);
         testUser = newUser();
         testJwt = newJwt();
         testResponse = new SignUpResponse(testUser);
@@ -135,9 +136,18 @@ public class UserControllerUnitTests {
 
     @Test
     public void delOwnerGetForbiddenErrIfIamAdmin() throws Exception {
+        String errMsg = String.format("Has no rights: deleting owner - ADMIN ('%s'), %s. Can't del an ADMIN !",
+                testUser.getNickname(), testUser.getUsername());
+        var ex = new NoRightsException(errMsg, null, "USER", "'/user'", "'delCurrentUser' service");
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
         testUser.setRole(Role.ADMIN); //        System.out.println(mapper.writeValueAsString(testUser));
         testJwt = newJwt();
+
+        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerNoRightsErr(Mockito.any(ex.getClass()));
+        Mockito.doThrow(ex).when(userService).delCurrentUser(Mockito.any());
         mockAuthorize();
+
+        log.info(errMsg);
         mockMvc.perform(mockRequest(delete(USER_URI))).andExpect(status().isForbidden());
     }
 
@@ -193,6 +203,7 @@ public class UserControllerUnitTests {
         Mockito.doThrow(ex).when(userService).register(Mockito.any(SignUpRequest.class), Mockito.any());
         mockAuthorize();
 
+        log.info(errMsg);
         var mockRequest = post(SIGN_UP_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(testRequest))
@@ -229,6 +240,7 @@ public class UserControllerUnitTests {
         Mockito.doThrow(ex).when(userService).updateUser(Mockito.any(UpdateRequest.class), Mockito.any());
         mockAuthorize();
 
+        log.info(errMsg);
         var mockRequest = mockRequest(put(USER_URI))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(testRequest));
@@ -283,7 +295,7 @@ public class UserControllerUnitTests {
         log.info("testing user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
     }
 
-    public MockHttpServletRequestBuilder mockRequest(MockHttpServletRequestBuilder entryPoint) throws Exception {
+    public MockHttpServletRequestBuilder mockRequest(MockHttpServletRequestBuilder entryPoint) {
         return entryPoint
                 .header("auth-token", "Bearer " + testJwt)
                 .with(csrf())

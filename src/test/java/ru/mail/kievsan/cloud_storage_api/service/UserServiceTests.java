@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.mail.kievsan.cloud_storage_api.exception.UserRegistrationException;
+import ru.mail.kievsan.cloud_storage_api.exception.NoRightsException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
@@ -34,12 +34,12 @@ public class UserServiceTests {
 
     @AfterAll
     public static void testSuiteComplete() {
-        System.out.printf("User service tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
+        System.out.printf("\nUser service tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
     }
 
     @BeforeEach
     public void runTest() {
-        System.out.println("Starting new test " + this);
+        System.out.println("\nStarting new test " + this);
         testUser = newUser();
         userService.signup(testUser);
     }
@@ -94,7 +94,7 @@ public class UserServiceTests {
         testUser.setRole(Role.ADMIN);
         userRepo.save(testUser);
 
-        assertThrows(UserRegistrationException.class, () -> userService.delCurrentUser(testUser));
+        assertThrows(NoRightsException.class, () -> userService.delCurrentUser(testUser));
         var user = userRepo.findById(testUser.getId()).orElse(null);
         assertNotNull(user);
     }

@@ -35,6 +35,11 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 
+    @ExceptionHandler(NoRightsException.class)   // 403
+    public ResponseEntity<ErrResponse> handlerNoRightsErr(NoRightsException ex) {
+        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
+    }
+
     @ExceptionHandler(UserNotFoundException.class)      // 404
     public ResponseEntity<ErrResponse> handlerUserNotFound(UserNotFoundException ex) {
         return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());

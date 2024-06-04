@@ -39,24 +39,27 @@ public class UserService {
                 .enabled(true)
                 .build();
         if (userRepo.existsByEmail(newUser.getUsername())) {
-            throw new UserRegistrationException("The username is already in use, registration is not possible!",
-                    null, null, null, "'register service'");
+            String errMsg = String.format("The email %s is already in use, registration is not possible!", req.getEmail());
+            logError(newUser, errMsg);
+            throw new UserRegistrationException(errMsg, null, null, null, "'register service'");
         }
-        signup(newUser);
+//        signup(newUser);
+        newUser.setId(signup(newUser));
         return new SignUpResponse(newUser);
     }
     //
-    public void signup(User newUser) throws UserRegistrationException {
+    public Long signup(User newUser) throws UserRegistrationException {
         String msg = String.format("User %s (%s)", newUser.getUsername(), newUser.getNickname());
         try {
             userRepo.save(newUser);
             var user = userRepo.findByEmail(newUser.getEmail()).orElseThrow();
             msg += " signup: Id=" + user.getId();
+            log.info("SUCCESS! {}", msg);
+            return user.getId();
         } catch (RuntimeException ex) {
             msg += " was not signup: %s" + ex.getMessage();
             throw new UserRegistrationException(msg);
         }
-        log.info("SUCCESS! {}", msg);
     }
 
     @Transactional
@@ -66,7 +69,7 @@ public class UserService {
 
         if (!newEmail.equals(user.getEmail()) && userRepo.existsByEmail(newEmail)) {
             String errMsg = String.format("User with email '%s' already exists, the updating is not possible!", newEmail);
-            log.error("{}  {} ('{}'): {}", logErrTitle, user.getEmail(), user.getNickname(), errMsg);
+            logError(user, errMsg);
             throw new UserRegistrationException(errMsg, null, null, null, "'updateUser service'");
         }
 
@@ -75,6 +78,10 @@ public class UserService {
         log.info("SUCCESS update user '{}'  ->  email: '{}', password: {}", user.getNickname(), newEmail, newPassword);
         user.setEmail(newEmail);
         return new SignUpResponse(user);
+    }
+    //
+    private void logError(User user, String msg) {
+        log.error("{}  {} ('{}'): {}", logErrTitle, user.getEmail(), user.getNickname(), msg);
     }
 
     public SignUpResponse getUserById(Long id, User currentUser) throws NoRightsException, UserNotFoundException {
