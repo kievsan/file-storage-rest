@@ -3,7 +3,6 @@ package ru.mail.kievsan.cloud_storage_api.service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.exception.NotAuthenticateException;
 import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
@@ -26,7 +24,6 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.auth.AuthResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
-import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
 
 import java.security.Key;
 import java.util.Date;
@@ -34,7 +31,6 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-@Import({SecurityConfig.class, AuthConfig.class})
 public class AuthServiceUnitTests {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceUnitTests.class);
@@ -97,7 +93,7 @@ public class AuthServiceUnitTests {
 
         var testResponse = service.authenticate(loginRequest);
 
-        assertNotEquals(null, testResponse.getAuthToken());
+        assertNotNull(testResponse.getAuthToken());
         assertEquals(loginResponse, testResponse);
     }
 

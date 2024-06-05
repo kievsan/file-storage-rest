@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
@@ -70,8 +69,8 @@ public class FileListControllerUnitTests {
     ExceptionHandlerAdvice exceptionHandlerAdvice;
 
     final List<FileListResponse> testResponse = List.of(
-            newFileListResponse(0), newFileListResponse(1), newFileListResponse(2),
-            newFileListResponse(3), newFileListResponse(4), newFileListResponse(5)
+            newFileListResponse(1), newFileListResponse(2), newFileListResponse(3),
+            newFileListResponse(4), newFileListResponse(5), newFileListResponse(6)
     );
 
     User testUser;
@@ -105,7 +104,7 @@ public class FileListControllerUnitTests {
     }
 
     @Test
-    public void getFileList() throws Exception {
+    public void getFileListTest() throws Exception {
         Mockito.when(listService.getFileList(Mockito.anyInt(), Mockito.any(User.class))).thenReturn(testResponse);
         mockAuthorize();
 
