@@ -28,7 +28,7 @@ public class AuthService {
     private final JwtProvider provider;
     private final AuthenticationManager authManager;
 //
-    public AuthResponse authenticate(AuthRequest request) throws RuntimeException {
+    public AuthResponse authenticate(AuthRequest request) throws UserNotFoundException, NotAuthenticateException {
         String msg = String.format("User '%s'", request.getLogin());
         String errMsg = "was not authenticated";
 
@@ -45,7 +45,7 @@ public class AuthService {
 //            var jwtToken = provider.generateToken(claims, user);
 
             var jwtToken = provider.generateToken(user);
-            System.out.printf("login jwtRepo ->\n   %s:  '%s...'\n", user.getUsername(), userDetails.presentJWT(jwtToken));
+            System.out.printf("login jwtRepo ->\n   %s:  '%s'\n", user.getUsername(), userDetails.presentJWT(jwtToken));
 
             auth = SecurityContextHolder.getContext().getAuthentication();
             msg += String.format(" with ROLEs = %s authenticated: %s", auth.getAuthorities(), auth.getPrincipal());
@@ -69,6 +69,6 @@ public class AuthService {
         System.out.printf("logout jwtRepo ->   %s\n", auth.getPrincipal());
         log.info("User '{}' ({}) was logged out. JWT is disabled.", user.getUsername(), user.getNickname());
 
-        return String.format("Success logout: '%s' (%s)", user.getUsername(), user.getNickname()) ;
+        return String.format("Success logout: '%s' (%s)", user.getUsername(), user.getNickname());
     }
 }

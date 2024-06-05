@@ -13,14 +13,15 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpRequest;
 import ru.mail.kievsan.cloud_storage_api.model.dto.user.SignUpResponse;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
-import ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
+
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.USER_URI;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping(ISecuritySettings.USER_URI)
+@RequestMapping(USER_URI)
 public class UserController {
 
     static final String logTitle = "Start User controller";
@@ -53,8 +54,8 @@ public class UserController {
                         "Update user error", log::error)));
     }
 
-//    @RolesAllowed({"ROLE_ADMIN"})  // блокирует любых пользователей ??????????!!! ПОЧЕМУ с Role.ADMIN тоже блокирует?
-//    @Secured({"ROLE_ADMIN"})      // блокирует любых пользователей ??????????!!!
+//    @RolesAllowed({"ROLE_ADMIN"})
+//    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     public ResponseEntity<SignUpResponse> getUser(@PathVariable @Positive Long id,
@@ -70,7 +71,7 @@ public class UserController {
                 userProvider.trueUser(authToken, logTitle, "Get owner error", log::error)));
     }
 
-//    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")  // блокирует любых пользователей ??????????!!!
+//    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delUser(@PathVariable @Positive Long id, @RequestHeader(name = "auth-token") String authToken) {

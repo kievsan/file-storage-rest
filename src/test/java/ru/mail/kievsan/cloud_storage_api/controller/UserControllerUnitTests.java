@@ -282,15 +282,15 @@ public class UserControllerUnitTests {
     }
 
     public void mockAuthorize() {
-        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(newJwt()); //+++++ Mock
+        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(testJwt);
 
-        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
-        Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser); //+++++ Mock
+        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser);
+        Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser);
         Mockito.when(userDetails.presentAuthenticated())
-                .thenReturn("user  %s, %s".formatted(testUser.getUsername(), testUser.getAuthorities())); //+++++ Mock
+                .thenReturn("user  %s, %s".formatted(testUser.getUsername(), testUser.getAuthorities()));
         Mockito.when(userDetails.presentJWT(Mockito.anyString()))
                 .thenReturn(testJwt.substring(0, testJwt.length()/10)
-                        + "..." + testJwt.substring(testJwt.length() - 2)); //+++++ Mock
+                        + "..." + testJwt.substring(testJwt.length() - 2));
 
         log.info("testing user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
     }

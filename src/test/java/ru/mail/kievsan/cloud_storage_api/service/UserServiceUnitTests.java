@@ -113,8 +113,6 @@ public class UserServiceUnitTests {
         assertThrows(UserRegistrationException.class, () -> service.updateUser(testRequest, testUser));
     }
 
-
-
     private User newUser() {
         return User.builder()
                 .id(2L)
@@ -129,5 +127,4 @@ public class UserServiceUnitTests {
     public void logCapture() {
         log.info("testing user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
     }
-
 }

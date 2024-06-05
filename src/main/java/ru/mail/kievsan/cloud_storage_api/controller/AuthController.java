@@ -8,9 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.kievsan.cloud_storage_api.model.dto.auth.*;
-import ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings;
+import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.service.AuthService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
+
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.*;
 
 @CrossOrigin(methods = {RequestMethod.POST})
 @RestController
@@ -20,16 +22,17 @@ import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 public class AuthController {
 
     private final AuthService service;
+    private final JwtUserDetails userDetails;
     private final UserProvider provider;
 
-    @PostMapping(ISecuritySettings.LOGIN_URI)
+    @PostMapping(LOGIN_URI)
     @PermitAll
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        log.info(" Start Auth controller:  login  {}", provider.userDetails.presentAuthenticated());
+        log.info(" Start Auth controller:  login  {}", userDetails.presentAuthenticated());
         return ResponseEntity.ok(service.authenticate(request));
     }
 
-    @PostMapping (ISecuritySettings.LOGOUT_URI)
+    @PostMapping (LOGOUT_URI)
     @PermitAll
     public ResponseEntity<String> logout(@RequestHeader("auth-token") String authToken,
                                          HttpServletRequest request, HttpServletResponse response) {
