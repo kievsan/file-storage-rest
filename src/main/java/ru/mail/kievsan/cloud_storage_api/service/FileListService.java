@@ -3,12 +3,12 @@ package ru.mail.kievsan.cloud_storage_api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.mail.kievsan.cloud_storage_api.exception.UserNotFoundException;
+import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file_list.FileListResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
+import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class FileListService {
 
     private final FileJPARepo fileRepo;
+    private final UserJPARepo userRepo;
 
     public List<FileListResponse> getFileList(Integer limit, User user) throws RuntimeException {
         log.info("  Start File list service, get file list with limit = {},  user:  {} ({}), {}",
@@ -32,8 +33,8 @@ public class FileListService {
             return limitStream.map(file -> new FileListResponse(file.getFilename(), file.getSize()))
                     .collect(Collectors.toList());
         } catch (RuntimeException ex) {
-            String msg = String.format("Get file list error:  %s", ex);
-            throw new UserNotFoundException(msg, HttpStatus.NOT_FOUND, "FILE LIST", "'/list'", "'getFileList service'");
+            String msg = String.format("Got file list error:  %s", ex);
+            throw new InternalServerException(msg, null, "FILE LIST", "'/list'", "'getFileList service'");
         }
     }
 }

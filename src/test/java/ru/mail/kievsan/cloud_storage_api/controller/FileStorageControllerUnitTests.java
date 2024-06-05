@@ -1,5 +1,6 @@
 package ru.mail.kievsan.cloud_storage_api.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -11,50 +12,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.web.multipart.MultipartFile;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice.ExceptionHandlerAdvice;
-import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
+import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
+import ru.mail.kievsan.cloud_storage_api.exception.NoRightsException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
-import ru.mail.kievsan.cloud_storage_api.model.dto.file_list.FileListResponse;
+import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
+import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
 import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
-import ru.mail.kievsan.cloud_storage_api.service.FileListService;
+import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
 import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.*;
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.FILE_URI;
 
-@WebMvcTest(FileListController.class)
+@WebMvcTest(FileStorageController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
-public class FileListControllerUnitTests {
+public class FileStorageControllerUnitTests {
 
-    private static final Logger log = LoggerFactory.getLogger(FileListControllerUnitTests.class);
+    private static final Logger log = LoggerFactory.getLogger(FileStorageControllerUnitTests.class);
     private static long suiteStartTime;
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper mapper;
 
     @MockBean
-    FileListService listService;
+    FileStorageService fileService;
 
+    @MockBean
+    FileJPARepo fileRepo;
     @MockBean
     UserService userService;
     @MockBean
@@ -70,11 +77,6 @@ public class FileListControllerUnitTests {
     @MockBean
     ExceptionHandlerAdvice exceptionHandlerAdvice;
 
-    final List<FileListResponse> testResponse = List.of(
-            newFileListResponse(1), newFileListResponse(2), newFileListResponse(3),
-            newFileListResponse(4), newFileListResponse(5), newFileListResponse(6)
-    );
-
     User testUser;
     String testJwt;
     final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
@@ -82,19 +84,18 @@ public class FileListControllerUnitTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running 'File List' controller tests...");
+        System.out.println("----------- Running 'File Storage' controller tests...");
         suiteStartTime = System.currentTimeMillis();
     }
 
     @AfterAll
     public static void testSuiteComplete() {
-        System.out.printf("\n'File List' controller tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
+        System.out.printf("\n'File Storage' controller tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
     }
 
     @BeforeEach
     public void runTest() {
         System.out.println("\nStarting new test " + this);
-
         testUser = newUser();
         testJwt = newJwt();
     }
@@ -106,35 +107,37 @@ public class FileListControllerUnitTests {
     }
 
     @Test
-    public void getFileListTest() throws Exception {
-        Mockito.when(listService.getFileList(Mockito.anyInt(), Mockito.any(User.class))).thenReturn(testResponse);
+    public void uploadFileTest() throws Exception {
+        System.out.println("  Upload file");
         mockAuth();
-
-        mockMvc.perform(mockRequest(get(FILE_LIST_URI))).andExpect(status().isOk())
-//                .andExpect(jsonPath("$", Matchers.hasSize(6)))
-//                .andExpect(jsonPath("$[0].filename", Matchers.is(testResponse.getFirst().getFilename())))
-        ;
+        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isOk());
     }
 
 //    @Test
-//    public void getFileListErrTest() throws Exception {
-//        System.out.println("  User file list error");
-//        String errMsg = "Unknown error, getting user file list is not possible!";
+//    public void uploadFileErrTest() throws Exception {
+//        System.out.println("  Upload user file error");
+//        String errMsg = "NullPointer / IO error, uploading user file is not possible!";
 //        log.info(errMsg);
-//        var ex = new InternalServerException(errMsg, null, "FILE LIST", "'/list'", "'getFileList service'");
+//        var ex = new InputDataException(errMsg, null, "FILE", "'/file'", "'uploadFile service'");
 //        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
 //
-//        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerServerErr(Mockito.any(ex.getClass()));
-//        Mockito.doThrow(ex).when(listService).getFileList(Mockito.anyInt(), Mockito.any(User.class));
+//        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(ex.getClass()));
+//        Mockito.doThrow(ex).when(fileService).uploadFile(Mockito.anyString(), Mockito.any(MultipartFile.class), Mockito.any(User.class));
+//        // Mockito.doThrow(ex).when(fileRepo).save(Mockito.any(File.class));
 //        mockAuth();
 //
-//        mockMvc.perform(mockRequest(get(FILE_LIST_URI))).andExpect(status().isInternalServerError());
+//        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isBadRequest());
 //    }
 
-    private FileListResponse newFileListResponse(int num) {
-        return FileListResponse.builder()
-                .filename("testfile" + num)
-                .size(Long.decode(String.valueOf(num)) * 10)
+    private File newFile(int number) {
+        var numberLong = Long.parseLong(String.valueOf(number));
+        return File.builder()
+                .id(numberLong)
+                .filename("testfile" + number)
+                .size(numberLong * 10)
+                .date(LocalDateTime.now())
+                .content("Hello, %s".formatted(number).getBytes())
+                .user(testUser)
                 .build();
     }
 

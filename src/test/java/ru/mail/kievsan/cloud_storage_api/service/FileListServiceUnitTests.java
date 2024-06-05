@@ -12,6 +12,7 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
+import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 
 import java.time.LocalDateTime;
 import java.util.List;
