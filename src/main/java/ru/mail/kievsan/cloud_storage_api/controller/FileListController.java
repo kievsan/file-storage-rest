@@ -1,6 +1,5 @@
 package ru.mail.kievsan.cloud_storage_api.controller;
 
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.constraints.Pattern;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -15,19 +14,20 @@ import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.util.List;
 
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.FILE_LIST_URI;
+
 @CrossOrigin(methods = {RequestMethod.GET})
 @RestController
 @Validated
 @RequiredArgsConstructor
 @EnableMethodSecurity
 @Slf4j
-@RequestMapping("/api/v1/list")
+@RequestMapping(FILE_LIST_URI)
 public class FileListController {
 
     private final FileListService service;
     private final UserProvider provider;
 
-    @PermitAll
     @GetMapping(headers = "auth-token")
     ResponseEntity<List<FileListResponse>> getFileList(@RequestHeader(name = "auth-token")
                                                        @NonNull @Pattern(regexp = "^Bearer .+$") String authToken,

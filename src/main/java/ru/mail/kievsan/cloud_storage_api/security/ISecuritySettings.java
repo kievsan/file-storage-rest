@@ -9,4 +9,5 @@ public interface ISecuritySettings {
     String LOGOUT_URI = BASE_URI + "/logout";
     String POST_FREE_ENTRY_POINTS = String.format("%s, %s, %s", SIGN_UP_URI, LOGIN_URI, LOGOUT_URI);
     String FILE_URI = BASE_URI + "/file";
+    String FILE_LIST_URI = BASE_URI + "/list";
 }
