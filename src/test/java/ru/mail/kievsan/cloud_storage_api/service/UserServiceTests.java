@@ -11,6 +11,8 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.user.UpdateRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -28,7 +30,7 @@ public class UserServiceTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running User service tests...");
+        System.out.println("----------- Running User service tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
     }
 

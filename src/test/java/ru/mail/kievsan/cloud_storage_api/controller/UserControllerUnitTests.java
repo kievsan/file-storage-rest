@@ -40,6 +40,7 @@ import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -78,7 +79,7 @@ public class UserControllerUnitTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running 'User' controller tests...");
+        System.out.println("----------- Running 'User' controller tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
     }
 

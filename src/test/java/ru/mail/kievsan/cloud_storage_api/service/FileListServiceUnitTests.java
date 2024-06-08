@@ -2,6 +2,8 @@ package ru.mail.kievsan.cloud_storage_api.service;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -12,12 +14,13 @@ import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
-import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class FileListServiceUnitTests {
@@ -25,19 +28,20 @@ public class FileListServiceUnitTests {
     private static final Logger log = LoggerFactory.getLogger(FileListServiceUnitTests.class);
     private static long suiteStartTime;
 
-    @InjectMocks
-    private FileListService service;
+    private static User testUser;
+    private static List<File> testFileList;
 
     @Mock
     FileJPARepo fileRepo;
 
-    User testUser;
-    List<File> listResponse;
+    @InjectMocks
+    private FileListService service;
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running File List service unit tests...");
+        System.out.println("----------- Run File List service unit tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
+        testFileList = List.of(newFile(1), newFile(2), newFile(3));
     }
 
     @AfterAll
@@ -49,30 +53,40 @@ public class FileListServiceUnitTests {
     public void runTest() {
         System.out.println("\nStarting new test " + this);
         testUser = newUser();
-        listResponse = List.of(newFile(1), newFile(2), newFile(3), newFile(4));
     }
 
     @AfterEach
     void finishTest() {
         testUser = null;
-        listResponse = null;
     }
 
-    @Test
-    public void getFileListTest() {
-        System.out.println("  File list service");
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @MethodSource
+    @DisplayName("Test the getting your file list and has no exceptions:" +
+            "   getFileListHappyTest() ")
+    public void getFileListHappyTest(Integer limit, Integer size) {
+        System.out.println("  Get file list happy test: ");
         logCapture();
-        Mockito.when(fileRepo.findAllByUserOrderByFilename(Mockito.any(User.class))).thenReturn(listResponse);
+        Mockito.when(fileRepo.findAllByUserOrderByFilename(Mockito.any(User.class))).thenReturn(testFileList);
 
-        assertDoesNotThrow(() -> service.getFileList(listResponse.size(), testUser));
+        var testResponse = service.getFileList(limit, testUser);
 
-        var testResponse = service.getFileList(listResponse.size(), testUser);
-
+        verify(fileRepo).findAllByUserOrderByFilename(testUser);
         assertNotNull(testResponse);
-        assertEquals(listResponse.size(), testResponse.size());
+        assertEquals(testFileList.size(), testResponse.size());
     }
 
-    private File newFile(int number) {
+    static Stream<Integer[]> getFileListHappyTest() {
+        final int SIZE = testFileList.size();
+        return Stream.of(
+                new Integer[]{SIZE, SIZE},
+                new Integer[]{SIZE + 1, SIZE},
+                new Integer[]{0, SIZE},
+                new Integer[]{-1, SIZE}
+        );
+    }
+
+    private static File newFile(int number) {
         var numberLong = Long.parseLong(String.valueOf(number));
         return File.builder()
                 .id(numberLong)
@@ -84,7 +98,7 @@ public class FileListServiceUnitTests {
                 .build();
     }
 
-    private User newUser() {
+    private static User newUser() {
         return User.builder()
                 .id(2L)
                 .nickname("testuser")
@@ -97,10 +111,5 @@ public class FileListServiceUnitTests {
 
     public void logCapture() {
         log.info("testing user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
-    }
-
-    public void logCapture(String msg) {
-        logCapture();
-        log.info(msg);
     }
 }

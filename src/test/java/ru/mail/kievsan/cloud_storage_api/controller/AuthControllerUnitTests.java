@@ -37,6 +37,7 @@ import ru.mail.kievsan.cloud_storage_api.service.AuthService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -82,7 +83,7 @@ public class AuthControllerUnitTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running 'Auth' controller tests...");
+        System.out.println("----------- Running 'Auth' controller tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
     }
 

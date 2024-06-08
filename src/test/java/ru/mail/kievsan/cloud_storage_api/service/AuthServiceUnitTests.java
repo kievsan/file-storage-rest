@@ -26,6 +26,7 @@ import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,15 +37,15 @@ public class AuthServiceUnitTests {
     private static final Logger log = LoggerFactory.getLogger(AuthServiceUnitTests.class);
     private static long suiteStartTime;
 
-    @InjectMocks
-    private AuthService service;
-
     @Mock
     JwtProvider jwtProvider;
     @Mock
     JwtUserDetails userDetails;
     @Mock
     AuthenticationManager authManager;
+
+    @InjectMocks
+    private AuthService service;
 
     User testUser;
     String testJwt;
@@ -56,7 +57,7 @@ public class AuthServiceUnitTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running Auth service unit tests...");
+        System.out.println("----------- Running Auth service unit tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
     }
 
@@ -83,7 +84,7 @@ public class AuthServiceUnitTests {
     }
 
     @Test
-    public void authenticateTest() {
+    public void authenticateHappyTest() {
         System.out.println("  Authenticate user");
         logCapture();
         var loginResponse = new AuthResponse(testJwt);

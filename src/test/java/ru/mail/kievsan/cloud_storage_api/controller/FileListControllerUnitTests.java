@@ -34,6 +34,7 @@ import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class FileListControllerUnitTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running 'File List' controller tests...");
+        System.out.println("----------- Running 'File List' controller tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
     }
 
