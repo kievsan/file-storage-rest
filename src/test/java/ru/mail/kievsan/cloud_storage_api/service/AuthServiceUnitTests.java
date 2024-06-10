@@ -105,7 +105,7 @@ public class AuthServiceUnitTests {
 
         Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenThrow(UsernameNotFoundException.class);
 
-        assertThrows(UserNotFoundException.class, () ->service.authenticate(loginRequest));
+        assertThrows(UserNotFoundException.class, () -> service.authenticate(loginRequest));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class AuthServiceUnitTests {
 
         Mockito.when(authManager.authenticate(Mockito.any())).thenThrow(RuntimeException.class);
 
-        assertThrows(NotAuthenticateException.class, () ->service.authenticate(loginRequest));
+        assertThrows(NotAuthenticateException.class, () -> service.authenticate(loginRequest));
     }
 
     private User newUser() {

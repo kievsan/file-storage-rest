@@ -69,6 +69,6 @@ public class AuthService {
         System.out.printf("logout jwtRepo ->   %s\n", auth.getPrincipal());
         log.info("User '{}' ({}) was logged out. JWT is disabled.", user.getUsername(), user.getNickname());
 
-        return String.format("Success logout: '%s' (%s)", user.getUsername(), user.getNickname());
+        return String.format("Success logout '%s', %s", user.getNickname(), user.getUsername());
     }
 }

@@ -64,7 +64,7 @@ public class FileListServiceUnitTests {
     @MethodSource
     @DisplayName("Test the getting your file list and has no exceptions:" +
             "   getFileListHappyTest() ")
-    public void getFileListHappyTest(Integer limit, Integer size) {
+    public void getFileListOkTest(Integer limit, Integer size) {
         System.out.println("  Get file list happy test: ");
         logCapture();
         Mockito.when(fileRepo.findAllByUserOrderByFilename(Mockito.any(User.class))).thenReturn(testFileList);
@@ -76,7 +76,7 @@ public class FileListServiceUnitTests {
         assertEquals(testFileList.size(), testResponse.size());
     }
 
-    static Stream<Integer[]> getFileListHappyTest() {
+    static Stream<Integer[]> getFileListOkTest() {
         final int SIZE = testFileList.size();
         return Stream.of(
                 new Integer[]{SIZE, SIZE},

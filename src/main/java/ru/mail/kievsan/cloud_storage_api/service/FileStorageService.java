@@ -25,73 +25,71 @@ public class FileStorageService {
 
     private final FileJPARepo fileRepo;
 
-    public void uploadFile(String filename, MultipartFile file, User user) {
-        try {
-            fileRepo.save(new File(
-                    filename, LocalDateTime.now(),
-                    file == null ? 0 : file.getSize(),
-                    Objects.requireNonNull(file).getBytes(),
-                    //file == null ? Decoders.BASE64.decode("FileExample.") : file.getBytes(), // SUCCESS!
-                    user)
-            );
-            log.info("[User {}] Success upload file '{}'. ", user.getUsername(), filename);
-        } catch (IOException | NullPointerException e) {
-            String msg = String.format("User %s: error input data, upload file '%s'", user.getUsername(), filename);
-            log.error("{} {}", logErrTitle, msg);
-            throw new InputDataException(msg, null, "FILE", "'/file'", "'uploadFile service'");
-        }
-    }
-
-    @Transactional
-    public void editFileName(String filename, String newFileName, User user) {
-        if (newFileName == null || newFileName.isBlank()) {
-            String msg = String.format("User %s: new file name is null or empty, storage file '%s'",
-                    user.getUsername(), filename);
-            log.error("{} {}", logErrTitle, msg);
-            throw new InputDataException(msg, null, "FILE", "'/file'", "'editFileName service'");
-        }
-        newFileName = newFileName.trim();
-        if (!Objects.equals(filename, newFileName)) {
-            String errMsg = String.format("User %s: filename had no edited '%s' -> '%s'",
-                    user.getUsername(), filename, newFileName);
-            checkForTheFile(false, filename, user, errMsg,
-                    new InputDataException(errMsg, null, "FILE", "'/file'", "'editFileName service'")
-            );
-            fileRepo.editFileNameByUser(user, filename, newFileName);
-
-            errMsg = String.format("User %s: server error edit filename '%s' -> '%s'",
-                    user.getUsername(), filename, newFileName);
-            checkForTheFile(true, filename, user, errMsg,
-                    new InternalServerException(errMsg, null, "FILE", "'/file'", "'editFileName service'"));
-        }
-        log.info("[User {}] Success edit file name '{}' -> '{}'", user.getUsername(), filename, newFileName);
-    }
-
-    @Transactional
-    public void deleteFile(String filename, User user) {
-        String errMsg = String.format("User %s: delete file error, file not found '%s'", user.getUsername(), filename);
-        checkForTheFile(false, filename, user, errMsg,
-                new InputDataException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
+    public void uploadFile(String filename, MultipartFile file, User user) throws InputDataException {
+        String errMsg = "User %s: error input data, upload file '%s'.".formatted(user.getUsername(), filename);
+        fileRepo.save(new File(
+                filename,
+                LocalDateTime.now(),
+                file == null ? 0 : file.getSize(),
+                //file == null ? "Example".getBytes() : file.getBytes(), // SUCCESS!
+                getContentFromFile(file, errMsg),
+                user)
         );
-        fileRepo.deleteByUserAndFilename(user, filename);
-
-        errMsg = String.format("User %s: server error delete file '%s'", user.getUsername(), filename);
-        checkForTheFile(true, filename, user, errMsg,
-                new InternalServerException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
-        );
-        log.info("[User {}] Success delete file '{}'", user.getUsername(), filename);
+        log.info("[User {}] Success upload file '{}'. ", user.getUsername(), filename);
     }
 
-    public File downloadFile(String filename, User user) {
+    public File downloadFile(String filename, User user) throws InputDataException {
         String errMsg = String.format("User %s: download file error, file not found '%s'", user.getUsername(), filename);
-        File file = checkForTheFile(false, filename, user, errMsg,
+        File file = checkNotNullFile(false, filename, user, errMsg,
                 new InputDataException(errMsg, null, "FILE", "'/file'", "'downloadFile service'")
         );
         log.info("[User {}] Success download file '{}'", user.getUsername(), filename);
         return file;
     }
 
-    public File checkForTheFile(boolean exists, String filename, User user, String errMsg, RuntimeException exception) {
+    @Transactional
+    public void deleteFile(String filename, User user) throws InputDataException, InternalServerException {
+        String errMsg = String.format("User %s: delete file error, file not found '%s'", user.getUsername(), filename);
+        checkNotNullFile(false, filename, user, errMsg,
+                new InputDataException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
+        );
+
+        fileRepo.deleteByUserAndFilename(user, filename);
+
+        errMsg = String.format("User %s: server error delete file '%s'", user.getUsername(), filename);
+        checkNotNullFile(true, filename, user, errMsg,
+                new InternalServerException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
+        );
+        log.info("[User {}] Success delete file '{}'", user.getUsername(), filename);
+    }
+
+    @Transactional
+    public void editFileName(String filename, String newFileName, User user) throws InputDataException, InternalServerException {
+        if (newFileName == null || newFileName.isBlank()) {
+            String errMsg = String.format("User %s: new file name is null or empty, storage file '%s'",
+                    user.getUsername(), filename);
+            log.error("{} {}", logErrTitle, errMsg);
+            throw new InputDataException(errMsg, null, "FILE", "'/file'", "'editFileName service'");
+        }
+        newFileName = newFileName.trim();
+        if (!Objects.equals(filename, newFileName)) {
+            String errMsg = String.format("User %s: filename had no edited '%s' -> '%s'",
+                    user.getUsername(), filename, newFileName);
+            checkNotNullFile(false, filename, user, errMsg,
+                    new InputDataException(errMsg, null, "FILE", "'/file'", "'editFileName service'")
+            );
+
+            fileRepo.editFileNameByUser(user, filename, newFileName);
+
+            errMsg = String.format("User %s: server error edit filename '%s' -> '%s'",
+                    user.getUsername(), filename, newFileName);
+            checkNotNullFile(true, filename, user, errMsg,
+                    new InternalServerException(errMsg, null, "FILE", "'/file'", "'editFileName service'"));
+        }
+        log.info("[User {}] Success edit file name '{}' -> '{}'", user.getUsername(), filename, newFileName);
+    }
+
+    private File checkNotNullFile(boolean exists, String filename, User user, String errMsg, RuntimeException exception) throws RuntimeException {
         File file = fileRepo.findByUserAndFilename(user, filename);
         if (Objects.equals(file != null, exists)) {
             log.error("{} {}", logErrTitle, errMsg);
@@ -100,4 +98,12 @@ public class FileStorageService {
         return file;
     }
 
+    private byte[] getContentFromFile(MultipartFile file, String errMsg) throws InputDataException {
+        try {
+            return Objects.requireNonNull(file).getBytes();
+        } catch (IOException | NullPointerException e) {
+            log.error("{} {}  Cause: {}. {}", logErrTitle, errMsg, e.getClass(), e.getMessage() == null ? "" : e.getMessage());
+            throw new InputDataException(errMsg, null, "FILE", "'/file'", "'uploadFile service'");
+        }
+    }
 }
