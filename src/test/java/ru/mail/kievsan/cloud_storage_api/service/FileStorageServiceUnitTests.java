@@ -3,6 +3,7 @@ package ru.mail.kievsan.cloud_storage_api.service;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockMultipartFile;
 import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
+import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
@@ -88,11 +90,67 @@ public class FileStorageServiceUnitTests {
     @ValueSource(classes = {NullPointerException.class})
     @DisplayName("Checks that the file was not uploaded due to an error:" +
             "   getContentFromFileErrNullFileTest() ")
-    public void getContentFromFileErrNullFileTest(Class<Exception> testException) {
+    public void uploadFileErrNullFileTest(Class<Exception> testException) {
         System.out.println("  Failed file upload:");
         logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
 
         assertThrows(InputDataException.class, () -> service.uploadFile("testfile", null, testUser));
+    }
+
+    @Test
+    @DisplayName("Checks if the file was edited successfully:" +
+            "   editFileNameOkTest() ")
+    public void editFileNameOkTest() {
+        System.out.println("  Successful filename edit: ");
+        logCapture();
+        var newFileName = "new_" + testFile.getFilename();
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile)
+                .thenReturn(null);
+
+        assertDoesNotThrow(() -> service.editFileName(testFile.getFilename(), newFileName, testUser));
+    }
+
+    @ParameterizedTest(name = "{index} - ''{argumentsWithNames}''")
+    @NullAndEmptySource
+    @ValueSource(strings = {" "})
+    @DisplayName("Checks that the file was not updated due to an empty or blank new file name:" +
+            "   editFileNameErrNullNewFileNameTest() ")
+    public void editFileNameErrNullNewFileNameTest(String newFileName) {
+        System.out.println("  Failed edit file name:");
+        logCapture("  Got exception %s \n".formatted(InputDataException.class.getSimpleName()));
+
+        assertThrows(InputDataException.class, () -> service.editFileName(testFile.getFilename(), newFileName, testUser));
+    }
+
+    @Test
+    @DisplayName("Checks that the file was not updated due to a file name that not found:" +
+            "   editFileNameErrFileNotFoundTest() ")
+    public void editFileNameErrFileNotFoundTest() {
+        System.out.println("  Failed edit file name:");
+        logCapture("  Got exception %s \n".formatted(InputDataException.class.getSimpleName()));
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(null);
+
+        assertThrows(InputDataException.class,
+                () -> service.editFileName("notFoundFileName", "newFileName", testUser));
+    }
+
+    @Test
+    @DisplayName("Checks that the file was not updated due to an unknown error:" +
+            "   editFileNameErrUnknownTest() ")
+    public void editFileNameErrUnknownTest() {
+        System.out.println("  Failed edit file name:");
+        logCapture("  Got exception %s \n".formatted(InternalServerException.class.getSimpleName()));
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile)
+                .thenReturn(testFile);
+
+        assertThrows(InternalServerException.class,
+                () -> service.editFileName(testFile.getFilename(), "newFileName", testUser));
     }
 
     private static File newFile(int number) {
