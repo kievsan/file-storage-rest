@@ -54,9 +54,9 @@ public class AuthControllerUnitTests {
     private static long suiteStartTime;
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
-    private ObjectMapper mapper;
+    ObjectMapper mapper;
 
     @MockBean
     AuthService authService;

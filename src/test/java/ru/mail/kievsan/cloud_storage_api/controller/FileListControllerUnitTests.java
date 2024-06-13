@@ -51,7 +51,7 @@ public class FileListControllerUnitTests {
     private static long suiteStartTime;
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
 
     @MockBean
     FileListService listService;

@@ -52,9 +52,9 @@ public class UserControllerUnitTests {
     private static long suiteStartTime;
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
-    private ObjectMapper mapper;
+    ObjectMapper mapper;
 
     @MockBean
     UserService userService;

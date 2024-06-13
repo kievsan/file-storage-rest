@@ -27,7 +27,13 @@ public class FileStorageService {
     private final FileJPARepo fileRepo;
 
     public void uploadFile(String filename, MultipartFile file, User user) throws InputDataException {
-        String errMsg = "User %s: error input data, upload file '%s'.".formatted(user.getUsername(), filename);
+        String errMsg = String.format("User %s: file exists with the same name as new file name, uploading failed '%s'",
+                user.getUsername(), filename);
+        throwExceptionWhenFileFoundOrNot(true, filename, user,
+                new InputDataException(errMsg, null, "FILE", "'/file'", "'uploadFile service'")
+        );
+
+        errMsg = "User %s: error input data, upload file '%s'.".formatted(user.getUsername(), filename);
         fileRepo.save(new File(
                 filename,
                 LocalDateTime.now(),
@@ -41,7 +47,7 @@ public class FileStorageService {
 
     public File downloadFile(String filename, User user) throws InputDataException {
         String errMsg = String.format("User %s: download file error, file not found '%s'", user.getUsername(), filename);
-        File file = throwExceptionWhenFileFound(false, filename, user,
+        File file = throwExceptionWhenFileFoundOrNot(false, filename, user,
                 new InputDataException(errMsg, null, "FILE", "'/file'", "'downloadFile service'")
         );
         log.info("[User {}] Success download file '{}'", user.getUsername(), filename);
@@ -51,14 +57,14 @@ public class FileStorageService {
     @Transactional
     public void deleteFile(String filename, User user) throws InputDataException, InternalServerException {
         String errMsg = String.format("User %s: delete file error, file not found '%s'", user.getUsername(), filename);
-        throwExceptionWhenFileFound(false, filename, user,
+        throwExceptionWhenFileFoundOrNot(false, filename, user,
                 new InputDataException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
         );
 
         fileRepo.deleteByUserAndFilename(user, filename);
 
         errMsg = String.format("User %s: server error delete file '%s'", user.getUsername(), filename);
-        throwExceptionWhenFileFound(true, filename, user,
+        throwExceptionWhenFileFoundOrNot(true, filename, user,
                 new InternalServerException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
         );
         log.info("[User {}] Success delete file '{}'", user.getUsername(), filename);
@@ -76,7 +82,13 @@ public class FileStorageService {
         if (!Objects.equals(filename, newFileName)) {
             String errMsg = String.format("User %s: file name not found, then has not been edited '%s' -> '%s'",
                     user.getUsername(), filename, newFileName);
-            throwExceptionWhenFileFound(false, filename, user,
+            throwExceptionWhenFileFoundOrNot(false, filename, user,
+                    new InputDataException(errMsg, null, "FILE", "'/file'", "'editFileName service'")
+            );
+
+            errMsg = String.format("User %s: file exists with the same name as new file name, editing canceled '%s' -> '%s'",
+                    user.getUsername(), filename, newFileName);
+            throwExceptionWhenFileFoundOrNot(true, newFileName, user,
                     new InputDataException(errMsg, null, "FILE", "'/file'", "'editFileName service'")
             );
 
@@ -84,25 +96,17 @@ public class FileStorageService {
 
             errMsg = String.format("User %s: server error edit file name '%s' -> '%s', the file name remains the same...",
                     user.getUsername(), filename, newFileName);
-            throwExceptionWhenFileFound(true, filename, user,
+            throwExceptionWhenFileFoundOrNot(true, filename, user,
                     new InternalServerException(errMsg, null, "FILE", "'/file'", "'editFileName service'"));
         }
         log.info("[User {}] Success edit file name '{}' -> '{}'", user.getUsername(), filename, newFileName);
     }
 
-//    private File throwExceptionIfNotFoundFile(boolean exists, String filename, User user, AdviceException e) throws AdviceException {
-//        File file = fileRepo.findByUserAndFilename(user, filename);
-//        if (Objects.equals(file != null, exists)) {
-//            log.error("{} {}", logErrTitle, e.getMessage());
-//            throw e;
-//        }
-//        return file;
-//    }
-
-    private File throwExceptionWhenFileFound(boolean hasToThrow, String filename, User user, AdviceException e) throws AdviceException {
+    private File throwExceptionWhenFileFoundOrNot(boolean flag, String filename, User user, AdviceException e) throws AdviceException {
+        // Выбрасывать исключение: 1) когда файл найден, если flag=true; 2) когда файл не найден, если flag=false
         File file = fileRepo.findByUserAndFilename(user, filename);
         boolean found = file != null;
-        if (Objects.equals(found, hasToThrow)) {
+        if (Objects.equals(found, flag)) {
             log.error("{} {}", logErrTitle, e.getMessage());
             throw e;
         }

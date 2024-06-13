@@ -22,6 +22,7 @@ import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.reset;
 
 @ExtendWith(MockitoExtension.class)
 public class FileStorageServiceUnitTests {
@@ -55,6 +56,7 @@ public class FileStorageServiceUnitTests {
     @BeforeEach
     public void runTest() {
         System.out.println("\nStarting new test " + this);
+        reset(fileRepo);
         testUser = newUser();
     }
 
@@ -76,7 +78,7 @@ public class FileStorageServiceUnitTests {
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
     @ValueSource(classes = {InputDataException.class})
-    @DisplayName("Checks that the file was not uploaded due to an error:" +
+    @DisplayName("Checks the file was not uploaded due to an error:" +
             "   uploadFileErrTest() ")
     public void uploadFileErrTest(Class<Exception> testException) {
         System.out.println("  Failed file upload:");
@@ -87,14 +89,96 @@ public class FileStorageServiceUnitTests {
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @ValueSource(classes = {InputDataException.class})
+    @DisplayName("Checks the file was not uploaded due to an error:" +
+            "   uploadFileErrFileExistsTest() ")
+    public void uploadFileErrFileExistsTest(Class<Exception> testException) {
+        System.out.println("  Failed file upload:");
+        logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
+
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile);
+
+        assertThrows(testException, () -> service.uploadFile("testfile", mockFile, testUser));
+    }
+
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
     @ValueSource(classes = {NullPointerException.class})
-    @DisplayName("Checks that the file was not uploaded due to an error:" +
+    @DisplayName("Checks the file was not uploaded to the storage due to an error:" +
             "   getContentFromFileErrNullFileTest() ")
     public void uploadFileErrNullFileTest(Class<Exception> testException) {
         System.out.println("  Failed file upload:");
         logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
 
         assertThrows(InputDataException.class, () -> service.uploadFile("testfile", null, testUser));
+    }
+
+    @Test
+    @DisplayName("Checks if the file was downloaded from the storage successfully:" +
+            "   downloadFileOkTest() ")
+    public void downloadFileOkTest() {
+        System.out.println("  Successful file download: ");
+        logCapture();
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile);
+
+        assertDoesNotThrow(() -> service.downloadFile(testFile.getFilename(), testUser));
+    }
+
+    @Test
+    @DisplayName("Checks the file was not downloaded from the storage because it was not found:" +
+            "   downloadFileErrFileNotFoundTest() ")
+    public void downloadFileErrFileNotFoundTest() {
+        System.out.println("  Failed download file:");
+        logCapture("  Got exception %s \n".formatted(InputDataException.class.getSimpleName()));
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(null);
+
+        assertThrows(InputDataException.class, () -> service.downloadFile("notFoundFileName", testUser));
+    }
+
+    @Test
+    @DisplayName("Checks if the file was deleted successfully:" +
+            "   deleteFileOkTest() ")
+    public void deleteFileOkTest() {
+        System.out.println("  Successful file delete: ");
+        logCapture();
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile)
+                .thenReturn(null);
+
+        assertDoesNotThrow(() -> service.deleteFile(testFile.getFilename(), testUser));
+    }
+
+    @Test
+    @DisplayName("Checks the file was not deleted because it was not found:" +
+            "   deleteFileErrFileNotFoundTest() ")
+    public void deleteFileErrFileNotFoundTest() {
+        System.out.println("  Failed delete file:");
+        logCapture("  Got exception %s \n".formatted(InputDataException.class.getSimpleName()));
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(null);
+
+        assertThrows(InputDataException.class, () -> service.deleteFile("notFoundFileName", testUser));
+    }
+
+    @Test
+    @DisplayName("Checks the file was not deleted due to an unknown error:" +
+            "   deletedFileErrUnknownTest() ")
+    public void deleteFileErrUnknownTest() {
+        System.out.println("  Failed download file:");
+        logCapture("  Got exception %s \n".formatted(InternalServerException.class.getSimpleName()));
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile)
+                .thenReturn(testFile);
+
+        assertThrows(InternalServerException.class, () -> service.deleteFile(testFile.getFilename(), testUser));
     }
 
     @Test
@@ -107,6 +191,7 @@ public class FileStorageServiceUnitTests {
         Mockito
                 .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
                 .thenReturn(testFile)
+                .thenReturn(null)
                 .thenReturn(null);
 
         assertDoesNotThrow(() -> service.editFileName(testFile.getFilename(), newFileName, testUser));
@@ -115,7 +200,7 @@ public class FileStorageServiceUnitTests {
     @ParameterizedTest(name = "{index} - ''{argumentsWithNames}''")
     @NullAndEmptySource
     @ValueSource(strings = {" "})
-    @DisplayName("Checks that the file was not updated due to an empty or blank new file name:" +
+    @DisplayName("Checks the file was not updated due to an empty or blank new file name:" +
             "   editFileNameErrNullNewFileNameTest() ")
     public void editFileNameErrNullNewFileNameTest(String newFileName) {
         System.out.println("  Failed edit file name:");
@@ -125,7 +210,7 @@ public class FileStorageServiceUnitTests {
     }
 
     @Test
-    @DisplayName("Checks that the file was not updated due to a file name that not found:" +
+    @DisplayName("Checks the file was not updated due to a file name that not found:" +
             "   editFileNameErrFileNotFoundTest() ")
     public void editFileNameErrFileNotFoundTest() {
         System.out.println("  Failed edit file name:");
@@ -139,7 +224,22 @@ public class FileStorageServiceUnitTests {
     }
 
     @Test
-    @DisplayName("Checks that the file was not updated due to an unknown error:" +
+    @DisplayName("Checks the file was not updated due to user file exists with the same file name:" +
+            "   editFileNameErrFileExistsTest() ")
+    public void editFileNameErrFileExistsTest() {
+        System.out.println("  Failed edit file name:");
+        logCapture("  Got exception %s \n".formatted(InputDataException.class.getSimpleName()));
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(testFile)
+                .thenReturn(testFile);
+
+        assertThrows(InputDataException.class,
+                () -> service.editFileName(testFile.getFilename(), "same_filename", testUser));
+    }
+
+    @Test
+    @DisplayName("Checks the file was not updated due to an unknown error:" +
             "   editFileNameErrUnknownTest() ")
     public void editFileNameErrUnknownTest() {
         System.out.println("  Failed edit file name:");
@@ -147,6 +247,7 @@ public class FileStorageServiceUnitTests {
         Mockito
                 .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
                 .thenReturn(testFile)
+                .thenReturn(null)
                 .thenReturn(testFile);
 
         assertThrows(InternalServerException.class,

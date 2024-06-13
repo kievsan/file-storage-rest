@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,8 +46,10 @@ import java.util.Date;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.FILE_URI;
+import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.LOGIN_URI;
 
 @WebMvcTest(FileStorageController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
@@ -53,9 +59,9 @@ public class FileStorageControllerUnitTests {
     private static long suiteStartTime;
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
-    private ObjectMapper mapper;
+    ObjectMapper mapper;
 
     @MockBean
     FileStorageService fileService;
@@ -73,10 +79,13 @@ public class FileStorageControllerUnitTests {
     @MockBean
     JwtUserDetails userDetails;
     @MockBean
+    MockMultipartFile mockFile;
+    @MockBean
     JwtAuthenticationEntryPoint entryPoint;
     @MockBean
     ExceptionHandlerAdvice exceptionHandlerAdvice;
 
+    File testFile;
     User testUser;
     String testJwt;
     final String secretKey = "0K3l/+/b+b8VaB67FyspX7aSU++kdO6MXHJR2Kqr4VPE7y2R2UJ3iMOJnLNI7+T1";
@@ -84,7 +93,7 @@ public class FileStorageControllerUnitTests {
 
     @BeforeAll
     public static void testSuiteInit() {
-        System.out.println("----------- Running 'File Storage' controller tests...");
+        System.out.println("----------- Running 'File Storage' controller tests... at " + LocalDateTime.now());
         suiteStartTime = System.currentTimeMillis();
     }
 
@@ -96,38 +105,60 @@ public class FileStorageControllerUnitTests {
     @BeforeEach
     public void runTest() {
         System.out.println("\nStarting new test " + this);
+        testFile = newFile(1);
         testUser = newUser();
         testJwt = newJwt();
     }
 
     @AfterEach
     public void finishTest() {
+        testFile = null;
         testUser = null;
         testJwt = null;
     }
 
     @Test
-    public void uploadFileTest() throws Exception {
+    public void uploadFileOkTest() throws Exception {
         System.out.println("  Upload file");
         mockAuth();
-        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isOk());
+
+        var mockRequest = mockRequest(post(FILE_URI))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .content("test content".getBytes());
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk());
     }
 
-//    @Test
-//    public void uploadFileErrTest() throws Exception {
-//        System.out.println("  Upload user file error");
-//        String errMsg = "NullPointer / IO error, uploading user file is not possible!";
-//        log.info(errMsg);
-//        var ex = new InputDataException(errMsg, null, "FILE", "'/file'", "'uploadFile service'");
-//        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
-//
-//        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(ex.getClass()));
-//        Mockito.doThrow(ex).when(fileService).uploadFile(Mockito.anyString(), Mockito.any(MultipartFile.class), Mockito.any(User.class));
-//        // Mockito.doThrow(ex).when(fileRepo).save(Mockito.any(File.class));
-//        mockAuth();
-//
-//        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isBadRequest());
-//    }
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @ValueSource(strings = {
+            "NullPointer error - user file is null, uploading is not possible!",
+            "File exists with the same name as uploading file name, uploading failed!"
+    })
+    public void uploadFileErrTest(String errMsg) throws Exception {
+        System.out.println("  Upload user file error");
+        log.info(errMsg);
+        var ex = new InputDataException(errMsg, null, "FILE", "'/file'", "'uploadFile service'");
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
+
+        Mockito.doThrow(ex).when(fileService).uploadFile(Mockito.anyString(), Mockito.any(), Mockito.any());
+        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(ex.getClass()));
+        mockAuth();
+
+        var mockRequest = mockRequest(post(FILE_URI))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .content("".getBytes());
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void downloadFileOkTest() throws Exception {
+        System.out.println("  Download file");
+        Mockito.when(fileService.downloadFile(Mockito.anyString(), Mockito.any())).thenReturn(testFile);
+        mockAuth();
+
+        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isOk());
+    }
 
     private File newFile(int number) {
         var numberLong = Long.parseLong(String.valueOf(number));
@@ -179,6 +210,7 @@ public class FileStorageControllerUnitTests {
     public MockHttpServletRequestBuilder mockRequest(MockHttpServletRequestBuilder entryPoint) {
         return entryPoint
                 .header("auth-token", "Bearer " + testJwt)
+                .param("filename", "testfile")
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
     }
