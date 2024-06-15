@@ -8,7 +8,6 @@ import ru.mail.kievsan.cloud_storage_api.model.entity.User;
 import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +24,6 @@ public class FileListService {
 
         log.info("  Success: got file list. User {} ({})", user.getUsername(), user.getNickname());
 
-        return limitStream.map(file -> new FileListResponse(file.getFilename(), file.getSize()))
-                .collect(Collectors.toList());
+        return limitStream.map(file -> new FileListResponse(file.getFilename(), file.getSize())).toList();  // .collect(Collectors.toList());
     }
 }

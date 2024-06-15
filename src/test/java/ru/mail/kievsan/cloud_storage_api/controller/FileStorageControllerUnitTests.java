@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.FILE_URI;
 
@@ -114,7 +115,8 @@ public class FileStorageControllerUnitTests {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .content("test content".getBytes());
         mockMvc.perform(mockRequest)
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
@@ -137,7 +139,8 @@ public class FileStorageControllerUnitTests {
         mockMvc.perform(mockRequest)
                 .andExpect(ex.isInternalServerException()
                         ? status().isInternalServerError()
-                        : status().isBadRequest());
+                        : status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     static Stream<AdviceException> uploadFileErrTest() {
@@ -153,7 +156,9 @@ public class FileStorageControllerUnitTests {
         Mockito.when(fileService.downloadFile(Mockito.anyString(), Mockito.any())).thenReturn(testFile);
         mockAuth();
 
-        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isOk());
+        mockMvc.perform(mockRequest(get(FILE_URI)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.MULTIPART_FORM_DATA_VALUE));
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
@@ -168,7 +173,9 @@ public class FileStorageControllerUnitTests {
         Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(InputDataException.class));
         mockAuth();
 
-        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isBadRequest());
+        mockMvc.perform(mockRequest(get(FILE_URI)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     static Stream<AdviceException> downloadFileErrTest() {
@@ -182,7 +189,9 @@ public class FileStorageControllerUnitTests {
         Mockito.doNothing().when(fileService).deleteFile(Mockito.anyString(), Mockito.any());
         mockAuth();
 
-        mockMvc.perform(mockRequest(delete(FILE_URI))).andExpect(status().isOk());
+        mockMvc.perform(mockRequest(delete(FILE_URI)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
@@ -202,7 +211,8 @@ public class FileStorageControllerUnitTests {
         mockMvc.perform(mockRequest(delete(FILE_URI)))
                 .andExpect(ex.isInternalServerException()
                         ? status().isInternalServerError()
-                        : status().isBadRequest());
+                        : status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     static Stream<AdviceException> deleteFileErrTest() {
@@ -223,7 +233,8 @@ public class FileStorageControllerUnitTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request));
         mockMvc.perform(mockRequest)
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
@@ -247,7 +258,8 @@ public class FileStorageControllerUnitTests {
         mockMvc.perform(mockRequest)
                 .andExpect(ex.isInternalServerException()
                         ? status().isInternalServerError()
-                        : status().isBadRequest());
+                        : status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     static Stream<AdviceException> editFileNameErrTest() {

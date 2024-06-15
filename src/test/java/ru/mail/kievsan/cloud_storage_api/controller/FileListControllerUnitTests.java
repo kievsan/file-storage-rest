@@ -3,6 +3,7 @@ package ru.mail.kievsan.cloud_storage_api.controller;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -12,25 +13,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
-import ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice.ExceptionHandlerAdvice;
-import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
-import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file_list.FileListResponse;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
-import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
 import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
 import ru.mail.kievsan.cloud_storage_api.service.FileListService;
-import ru.mail.kievsan.cloud_storage_api.service.UserService;
 import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
@@ -40,6 +35,9 @@ import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.*;
 
@@ -57,19 +55,13 @@ public class FileListControllerUnitTests {
     FileListService listService;
 
     @MockBean
-    UserService userService;
-    @MockBean
-    UserJPARepo userRepo;
-    @MockBean
     JwtProvider jwtProvider;
-    @MockBean
-    UserProvider userProvider;
     @MockBean
     JwtUserDetails userDetails;
     @MockBean
-    JwtAuthenticationEntryPoint entryPoint;
+    UserProvider userProvider;
     @MockBean
-    ExceptionHandlerAdvice exceptionHandlerAdvice;
+    JwtAuthenticationEntryPoint entryPoint;
 
     final List<FileListResponse> testResponse = List.of(
             newFileListResponse(1), newFileListResponse(2), newFileListResponse(3),
@@ -107,30 +99,20 @@ public class FileListControllerUnitTests {
     }
 
     @Test
-    public void getFileListTest() throws Exception {
-        Mockito.when(listService.getFileList(Mockito.anyInt(), Mockito.any(User.class))).thenReturn(testResponse);
+    public void getFileListOkTest() throws Exception {
+        System.out.println("  Successful get user file list: ");
+        Mockito.when(listService.getFileList(Mockito.anyInt(), Mockito.any())).thenReturn(testResponse);
         mockAuth();
 
-        mockMvc.perform(mockRequest(get(FILE_LIST_URI))).andExpect(status().isOk())
-//                .andExpect(jsonPath("$", Matchers.hasSize(6)))
-//                .andExpect(jsonPath("$[0].filename", Matchers.is(testResponse.getFirst().getFilename())))
-        ;
+        mockMvc.perform(mockRequest(get(FILE_LIST_URI)))
+                //.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.length()").value(testResponse.size()))
+                //.andExpect(jsonPath("$", Matchers.hasSize(testResponse.size())))
+                .andExpect(jsonPath("$[0].filename", Matchers.is(testResponse.getFirst().getFilename())));
     }
-
-//    @Test
-//    public void getFileListErrTest() throws Exception {
-//        System.out.println("  User file list error");
-//        String errMsg = "Unknown error, getting user file list is not possible!";
-//        log.info(errMsg);
-//        var ex = new InternalServerException(errMsg, null, "FILE LIST", "'/list'", "'getFileList service'");
-//        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
-//
-//        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerServerErr(Mockito.any(ex.getClass()));
-//        Mockito.doThrow(ex).when(listService).getFileList(Mockito.anyInt(), Mockito.any(User.class));
-//        mockAuth();
-//
-//        mockMvc.perform(mockRequest(get(FILE_LIST_URI))).andExpect(status().isInternalServerError());
-//    }
 
     private FileListResponse newFileListResponse(int num) {
         return FileListResponse.builder()
@@ -177,6 +159,7 @@ public class FileListControllerUnitTests {
     public MockHttpServletRequestBuilder mockRequest(MockHttpServletRequestBuilder entryPoint) {
         return entryPoint
                 .header("auth-token", "Bearer " + testJwt)
+                .param("limit", String.valueOf(testResponse.size()))
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(testUser));
     }
