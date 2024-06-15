@@ -30,10 +30,12 @@ import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
 import ru.mail.kievsan.cloud_storage_api.model.dto.file.EditFileNameRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
+import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
+import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
 import java.time.LocalDateTime;
@@ -64,6 +66,10 @@ public class FileStorageControllerUnitTests {
     JwtProvider jwtProvider;
     @MockBean
     JwtUserDetails userDetails;
+    @MockBean
+    UserProvider userProvider;
+    @MockBean
+    JwtAuthenticationEntryPoint entryPoint;
     @MockBean
     ExceptionHandlerAdvice exceptionHandlerAdvice;
 
