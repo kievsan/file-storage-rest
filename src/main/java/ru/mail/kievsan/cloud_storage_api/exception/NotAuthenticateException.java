@@ -5,23 +5,23 @@ import org.springframework.http.HttpStatus;
 public class NotAuthenticateException extends AdviceException {
 
     public NotAuthenticateException() {
-        super();
+        this("Not authenticate exception");
     }
 
     public NotAuthenticateException(String message) {
-        super(message);
+        this(message, HttpStatus.UNAUTHORIZED);
     }
 
     public NotAuthenticateException(String message, HttpStatus httpStatus) {
-        super(message, httpStatus);
+        this(message, httpStatus, null);
     }
 
     public NotAuthenticateException(String message, HttpStatus httpStatus, String controller) {
-        super(message, httpStatus, controller);
+        this(message, httpStatus, controller, null);
     }
 
     public NotAuthenticateException(String message, HttpStatus httpStatus, String controller, String entryPoint) {
-        super(message, httpStatus, controller, entryPoint);
+        this(message, httpStatus, controller, entryPoint, null);
     }
 
     public NotAuthenticateException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {

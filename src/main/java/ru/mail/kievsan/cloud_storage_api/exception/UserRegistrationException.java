@@ -5,23 +5,23 @@ import org.springframework.http.HttpStatus;
 public class UserRegistrationException extends AdviceException {
 
     public UserRegistrationException() {
-        super();
+        this("User registration exception");
     }
 
     public UserRegistrationException(String message) {
-        super(message);
+        this(message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     public UserRegistrationException(String message, HttpStatus httpStatus) {
-        super(message, httpStatus);
+        this(message, httpStatus, null);
     }
 
     public UserRegistrationException(String message, HttpStatus httpStatus, String controller) {
-        super(message, httpStatus, controller);
+        this(message, httpStatus, controller, null);
     }
 
     public UserRegistrationException(String message, HttpStatus httpStatus, String controller, String entryPoint) {
-        super(message, httpStatus, controller, entryPoint);
+        this(message, httpStatus, controller, entryPoint, null);
     }
 
     public UserRegistrationException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {

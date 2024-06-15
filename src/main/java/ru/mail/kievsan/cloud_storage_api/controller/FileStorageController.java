@@ -47,7 +47,7 @@ public class FileStorageController {
     }
 
     @DeleteMapping()
-    public ResponseEntity<?> deleteFileName(@RequestHeader("auth-token") String authToken,
+    public ResponseEntity<?> deleteFile(@RequestHeader("auth-token") String authToken,
                                             @RequestParam("filename") String filename) {
         service.deleteFile(filename, provider.trueUser(authToken,
                 "%s, delete file '%s'".formatted(logTitle, filename), "Delete file error", log::error));

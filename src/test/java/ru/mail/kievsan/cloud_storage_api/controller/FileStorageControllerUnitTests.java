@@ -6,7 +6,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,40 +16,34 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.web.multipart.MultipartFile;
 import ru.mail.kievsan.cloud_storage_api.config.AuthConfig;
 import ru.mail.kievsan.cloud_storage_api.controller.exception_handler_advice.ExceptionHandlerAdvice;
+import ru.mail.kievsan.cloud_storage_api.exception.AdviceException;
 import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
-import ru.mail.kievsan.cloud_storage_api.exception.NoRightsException;
+import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
 import ru.mail.kievsan.cloud_storage_api.model.dto.err.ErrResponse;
+import ru.mail.kievsan.cloud_storage_api.model.dto.file.EditFileNameRequest;
 import ru.mail.kievsan.cloud_storage_api.model.entity.File;
 import ru.mail.kievsan.cloud_storage_api.model.entity.User;
-import ru.mail.kievsan.cloud_storage_api.repository.FileJPARepo;
-import ru.mail.kievsan.cloud_storage_api.repository.UserJPARepo;
-import ru.mail.kievsan.cloud_storage_api.security.JwtAuthenticationEntryPoint;
 import ru.mail.kievsan.cloud_storage_api.security.JwtProvider;
 import ru.mail.kievsan.cloud_storage_api.security.JwtUserDetails;
 import ru.mail.kievsan.cloud_storage_api.security.SecurityConfig;
 import ru.mail.kievsan.cloud_storage_api.service.FileStorageService;
-import ru.mail.kievsan.cloud_storage_api.service.UserService;
-import ru.mail.kievsan.cloud_storage_api.util.UserProvider;
 
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.FILE_URI;
-import static ru.mail.kievsan.cloud_storage_api.security.ISecuritySettings.LOGIN_URI;
 
 @WebMvcTest(FileStorageController.class)
 @Import({SecurityConfig.class, AuthConfig.class})
@@ -67,21 +61,9 @@ public class FileStorageControllerUnitTests {
     FileStorageService fileService;
 
     @MockBean
-    FileJPARepo fileRepo;
-    @MockBean
-    UserService userService;
-    @MockBean
-    UserJPARepo userRepo;
-    @MockBean
     JwtProvider jwtProvider;
     @MockBean
-    UserProvider userProvider;
-    @MockBean
     JwtUserDetails userDetails;
-    @MockBean
-    MockMultipartFile mockFile;
-    @MockBean
-    JwtAuthenticationEntryPoint entryPoint;
     @MockBean
     ExceptionHandlerAdvice exceptionHandlerAdvice;
 
@@ -119,7 +101,7 @@ public class FileStorageControllerUnitTests {
 
     @Test
     public void uploadFileOkTest() throws Exception {
-        System.out.println("  Upload file");
+        System.out.println("  Successful user file upload: ");
         mockAuth();
 
         var mockRequest = mockRequest(post(FILE_URI))
@@ -130,34 +112,143 @@ public class FileStorageControllerUnitTests {
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
-    @ValueSource(strings = {
-            "NullPointer error - user file is null, uploading is not possible!",
-            "File exists with the same name as uploading file name, uploading failed!"
-    })
-    public void uploadFileErrTest(String errMsg) throws Exception {
-        System.out.println("  Upload user file error");
-        log.info(errMsg);
-        var ex = new InputDataException(errMsg, null, "FILE", "'/file'", "'uploadFile service'");
+    @MethodSource
+    public void uploadFileErrTest(AdviceException ex) throws Exception {
+        System.out.println("  Upload user file error:   " + ex.getHttpStatus());
+        log.info(ex.getMessage());
+
         var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
 
         Mockito.doThrow(ex).when(fileService).uploadFile(Mockito.anyString(), Mockito.any(), Mockito.any());
-        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(ex.getClass()));
+        var mockResponse = ex.isInternalServerException()
+                ? Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerServerErr(Mockito.any(InternalServerException.class))
+                : Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(InputDataException.class));
         mockAuth();
 
         var mockRequest = mockRequest(post(FILE_URI))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .content("".getBytes());
+                .content("test with exception".getBytes());
         mockMvc.perform(mockRequest)
-                .andExpect(status().isBadRequest());
+                .andExpect(ex.isInternalServerException()
+                        ? status().isInternalServerError()
+                        : status().isBadRequest());
+    }
+
+    static Stream<AdviceException> uploadFileErrTest() {
+        return Stream.of(
+                new InputDataException("file name not found or the file already exists with the same name"),
+                new InternalServerException("server error edit file name, the file name remains the same...")
+        );
     }
 
     @Test
     public void downloadFileOkTest() throws Exception {
-        System.out.println("  Download file");
+        System.out.println("  Successful user file download: ");
         Mockito.when(fileService.downloadFile(Mockito.anyString(), Mockito.any())).thenReturn(testFile);
         mockAuth();
 
         mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isOk());
+    }
+
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @MethodSource
+    public void downloadFileErrTest(AdviceException ex) throws Exception {
+        System.out.println("  Download user file error:   " + ex.getHttpStatus());
+        log.info(ex.getMessage());
+
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
+
+        Mockito.doThrow(ex).when(fileService).downloadFile(Mockito.anyString(), Mockito.any());
+        Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(InputDataException.class));
+        mockAuth();
+
+        mockMvc.perform(mockRequest(get(FILE_URI))).andExpect(status().isBadRequest());
+    }
+
+    static Stream<AdviceException> downloadFileErrTest() {
+        return Stream.of(
+                new InputDataException("Download file error: file not found. Downloading failed!"));
+    }
+
+    @Test
+    public void deleteFileOkTest() throws Exception {
+        System.out.println("  Successful user file delete: ");
+        Mockito.doNothing().when(fileService).deleteFile(Mockito.anyString(), Mockito.any());
+        mockAuth();
+
+        mockMvc.perform(mockRequest(delete(FILE_URI))).andExpect(status().isOk());
+    }
+
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @MethodSource
+    public void deleteFileErrTest(AdviceException ex) throws Exception {
+        System.out.println("  Delete user file error:   " + ex.getHttpStatus());
+        log.info(ex.getMessage());
+
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
+
+        Mockito.doThrow(ex).when(fileService).deleteFile(Mockito.anyString(), Mockito.any());
+        var mockResponse = ex.isInternalServerException()
+                ? Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerServerErr(Mockito.any(InternalServerException.class))
+                : Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(InputDataException.class));
+        mockAuth();
+
+        mockMvc.perform(mockRequest(delete(FILE_URI)))
+                .andExpect(ex.isInternalServerException()
+                        ? status().isInternalServerError()
+                        : status().isBadRequest());
+    }
+
+    static Stream<AdviceException> deleteFileErrTest() {
+        return Stream.of(
+                new InputDataException("Delete user file error: file not found. Deleting failed!"),
+                new InternalServerException("server error delete file...")
+        );
+    }
+
+    @Test
+    public void editFileNameOkTest() throws Exception {
+        System.out.println("  Successful user file name edit: ");
+        var request = new EditFileNameRequest("new_testfile");
+        Mockito.doNothing().when(fileService).editFileName(Mockito.anyString(), Mockito.anyString(), Mockito.any());
+        mockAuth();
+
+        var mockRequest = mockRequest(put(FILE_URI))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(request));
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk());
+    }
+
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @MethodSource
+    public void editFileNameErrTest(AdviceException ex) throws Exception {
+        System.out.println("  Edit user file name error:   " + ex.getHttpStatus());
+        log.info(ex.getMessage());
+
+        var request = new EditFileNameRequest("new_testfile");
+        var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
+
+        Mockito.doThrow(ex).when(fileService).editFileName(Mockito.anyString(), Mockito.anyString(), Mockito.any());
+        var mockResponse = ex.isInternalServerException()
+                ? Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerServerErr(Mockito.any(InternalServerException.class))
+                : Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerErrInputData(Mockito.any(InputDataException.class));
+        mockAuth();
+
+        var mockRequest = mockRequest(put(FILE_URI))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(request));
+        mockMvc.perform(mockRequest)
+                .andExpect(ex.isInternalServerException()
+                        ? status().isInternalServerError()
+                        : status().isBadRequest());
+    }
+
+    static Stream<AdviceException> editFileNameErrTest() {
+        return Stream.of(
+                new InputDataException("file name not found or the file already exists with the same name"),
+                new InternalServerException("server error edit file name, the file name remains the same...")
+        );
     }
 
     private File newFile(int number) {

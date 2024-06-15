@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 public class InternalServerException extends AdviceException {
 
     public InternalServerException() {
+        this("internal server exception");
     }
 
     public InternalServerException(String message) {
@@ -24,7 +25,7 @@ public class InternalServerException extends AdviceException {
     }
 
     public InternalServerException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {
-        super(message, httpStatus == null ? HttpStatus.INTERNAL_SERVER_ERROR : httpStatus, controller, entryPoint, source);
+        super(message, httpStatus, controller, entryPoint, source);
     }
 
     public InternalServerException(AdviceException ex, String message) {

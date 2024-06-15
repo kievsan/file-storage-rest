@@ -9,19 +9,17 @@ import ru.mail.kievsan.cloud_storage_api.util.ILogUtils;
 @Setter
 public class AdviceException extends RuntimeException {
 
-    private final Class<?> exceptionClass = this.getClass();
-
     private final HttpStatus httpStatus;
     private final String controller;
     private final String entryPoint;
     private final String source;
 
     public AdviceException() {
-        this("Unknown mistake...");
+        this("user made exception...");
     }
 
     public AdviceException(String message) {
-        this(message, null);
+        this(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public AdviceException(String message, HttpStatus httpStatus) {
@@ -38,7 +36,7 @@ public class AdviceException extends RuntimeException {
 
     public AdviceException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {
         super(message);
-        this.httpStatus = httpStatus;
+        this.httpStatus = httpStatus == null ? HttpStatus.INTERNAL_SERVER_ERROR : httpStatus;
         this.controller = controller;
         this.entryPoint = entryPoint;
         this.source = source;
@@ -60,5 +58,14 @@ public class AdviceException extends RuntimeException {
                 ILogUtils.className.apply(getClass()),
                 source.isBlank() ? "" : source + ": ",
                 getMessage());
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
+
+    public boolean isInternalServerException() {
+        return getClass().getSimpleName().equals("InternalServerException");
     }
 }

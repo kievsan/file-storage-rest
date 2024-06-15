@@ -5,23 +5,23 @@ import org.springframework.http.HttpStatus;
 public class NoRightsException extends AdviceException {
 
     public NoRightsException() {
-        super();
+        this("No rights exception");
     }
 
     public NoRightsException(String message) {
-        super(message);
+        this(message, HttpStatus.FORBIDDEN);
     }
 
     public NoRightsException(String message, HttpStatus httpStatus) {
-        super(message, httpStatus);
+        this(message, httpStatus, null);
     }
 
     public NoRightsException(String message, HttpStatus httpStatus, String controller) {
-        super(message, httpStatus, controller);
+        this(message, httpStatus, controller, null);
     }
 
     public NoRightsException(String message, HttpStatus httpStatus, String controller, String entryPoint) {
-        super(message, httpStatus, controller, entryPoint);
+        this(message, httpStatus, controller, entryPoint, null);
     }
 
     public NoRightsException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {

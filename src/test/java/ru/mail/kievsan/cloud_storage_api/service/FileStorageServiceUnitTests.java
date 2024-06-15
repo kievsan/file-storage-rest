@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockMultipartFile;
+import ru.mail.kievsan.cloud_storage_api.exception.AdviceException;
 import ru.mail.kievsan.cloud_storage_api.exception.InputDataException;
 import ru.mail.kievsan.cloud_storage_api.exception.InternalServerException;
 import ru.mail.kievsan.cloud_storage_api.model.Role;
@@ -71,34 +72,26 @@ public class FileStorageServiceUnitTests {
     public void uploadFileOkTest() {
         System.out.println("  Successful file upload: ");
         logCapture();
-        Mockito.when(fileRepo.save(Mockito.any(File.class))).thenReturn(testFile);
 
-        assertDoesNotThrow(() -> service.uploadFile("testfile", mockFile, testUser));
+        Mockito.when(fileRepo.save(Mockito.any(File.class))).thenReturn(testFile); // операция записи файла без ошибки
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(null)      // до операции записи файла нет другого файла с таким же именем в БД
+                .thenReturn(testFile);   // после операции записи файла он найден в БД
+
+        assertDoesNotThrow(() -> service.uploadFile("testfile", mockFile, testUser)); // файл успешно подгружен
     }
 
     @ParameterizedTest(name = "{index} - {argumentsWithNames}")
     @ValueSource(classes = {InputDataException.class})
     @DisplayName("Checks the file was not uploaded due to an error:" +
             "   uploadFileErrTest() ")
-    public void uploadFileErrTest(Class<Exception> testException) {
+    public void uploadFileErrTest(Class<AdviceException> testException) {
         System.out.println("  Failed file upload:");
         logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
+
+        Mockito.when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString())).thenReturn(null);
         Mockito.when(fileRepo.save(Mockito.any(File.class))).thenThrow(testException);
-
-        assertThrows(testException, () -> service.uploadFile("testfile", mockFile, testUser));
-    }
-
-    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
-    @ValueSource(classes = {InputDataException.class})
-    @DisplayName("Checks the file was not uploaded due to an error:" +
-            "   uploadFileErrFileExistsTest() ")
-    public void uploadFileErrFileExistsTest(Class<Exception> testException) {
-        System.out.println("  Failed file upload:");
-        logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
-
-        Mockito
-                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
-                .thenReturn(testFile);
 
         assertThrows(testException, () -> service.uploadFile("testfile", mockFile, testUser));
     }
@@ -107,11 +100,41 @@ public class FileStorageServiceUnitTests {
     @ValueSource(classes = {NullPointerException.class})
     @DisplayName("Checks the file was not uploaded to the storage due to an error:" +
             "   getContentFromFileErrNullFileTest() ")
-    public void uploadFileErrNullFileTest(Class<Exception> testException) {
+    public void uploadFileErrNullFileTest(Class<RuntimeException> testException) {
         System.out.println("  Failed file upload:");
         logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
 
         assertThrows(InputDataException.class, () -> service.uploadFile("testfile", null, testUser));
+    }
+
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @ValueSource(classes = {InputDataException.class})
+    @DisplayName("Checks the file was not uploaded due to an error:" +
+            "   uploadFileErrFileExistsTest() ")
+    public void uploadFileErrFileExistsTest(Class<AdviceException> testException) {
+        System.out.println("  Failed file upload:");
+        logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
+
+        Mockito.when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString())).thenReturn(testFile);
+
+        assertThrows(testException, () -> service.uploadFile("testfile", mockFile, testUser));
+    }
+
+    @ParameterizedTest(name = "{index} - {argumentsWithNames}")
+    @ValueSource(classes = {InternalServerException.class})
+    @DisplayName("Checks that the file looks like it was uploaded, but was not found after\n:" +
+            "   uploadFileErrServerTest() ")
+    public void uploadFileErrServerTest(Class<AdviceException> testException) {
+        System.out.println("  Failed file upload:");
+        logCapture("  Got exception %s \n".formatted(testException.getSimpleName()));
+
+        Mockito.when(fileRepo.save(Mockito.any(File.class))).thenReturn(testFile);
+        Mockito
+                .when(fileRepo.findByUserAndFilename(Mockito.any(User.class), Mockito.anyString()))
+                .thenReturn(null)
+                .thenReturn(null);
+
+        assertThrows(testException, () -> service.uploadFile("testfile", mockFile, testUser));
     }
 
     @Test
@@ -168,9 +191,9 @@ public class FileStorageServiceUnitTests {
     }
 
     @Test
-    @DisplayName("Checks the file was not deleted due to an unknown error:" +
-            "   deletedFileErrUnknownTest() ")
-    public void deleteFileErrUnknownTest() {
+    @DisplayName("Checks the file was not deleted due to an internal server error:" +
+            "   deletedFileErrServerTest() ")
+    public void deleteFileErrServerTest() {
         System.out.println("  Failed download file:");
         logCapture("  Got exception %s \n".formatted(InternalServerException.class.getSimpleName()));
         Mockito
@@ -240,8 +263,8 @@ public class FileStorageServiceUnitTests {
 
     @Test
     @DisplayName("Checks the file was not updated due to an unknown error:" +
-            "   editFileNameErrUnknownTest() ")
-    public void editFileNameErrUnknownTest() {
+            "   editFileNameErrServerTest() ")
+    public void editFileNameErrServerTest() {
         System.out.println("  Failed edit file name:");
         logCapture("  Got exception %s \n".formatted(InternalServerException.class.getSimpleName()));
         Mockito

@@ -26,6 +26,7 @@ public class FileStorageService {
 
     private final FileJPARepo fileRepo;
 
+    @Transactional
     public void uploadFile(String filename, MultipartFile file, User user) throws InputDataException {
         String errMsg = String.format("User %s: file exists with the same name as new file name, uploading failed '%s'",
                 user.getUsername(), filename);
@@ -42,6 +43,12 @@ public class FileStorageService {
                 getFileContent(file, errMsg),
                 user)
         );
+
+        errMsg = String.format("User %s: server error upload file '%s'", user.getUsername(), filename);
+        throwExceptionWhenFileFoundOrNot(false, filename, user,
+                new InternalServerException(errMsg, null, "FILE", "'/file'", "'uploadFile service'")
+        );
+
         log.info("[User {}] Success upload file '{}'. ", user.getUsername(), filename);
     }
 
@@ -67,6 +74,7 @@ public class FileStorageService {
         throwExceptionWhenFileFoundOrNot(true, filename, user,
                 new InternalServerException(errMsg, null, "FILE", "'/file'", "'deleteFile service'")
         );
+
         log.info("[User {}] Success delete file '{}'", user.getUsername(), filename);
     }
 
@@ -103,7 +111,7 @@ public class FileStorageService {
     }
 
     private File throwExceptionWhenFileFoundOrNot(boolean flag, String filename, User user, AdviceException e) throws AdviceException {
-        // Выбрасывать исключение: 1) когда файл найден, если flag=true; 2) когда файл не найден, если flag=false
+        // Выбрасывать исключение: 1) если файл найден, когда flag=true; 2) если файл не найден, когда flag=false
         File file = fileRepo.findByUserAndFilename(user, filename);
         boolean found = file != null;
         if (Objects.equals(found, flag)) {

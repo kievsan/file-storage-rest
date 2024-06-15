@@ -25,11 +25,6 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
     }
 
-//    @ExceptionHandler(NotAuthenticateException.class)   // 401
-//    public ResponseEntity<ErrResponse> handlerUnauthorizedUser(NotAuthenticateException ex) {
-//        return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());
-//    }
-
     @ExceptionHandler(UnauthorizedUserException.class)   // 401
     public ResponseEntity<ErrResponse> handlerUnauthorizedUser(UnauthorizedUserException ex) {
         return new ResponseEntity<>(errResp(ex), ex.getHttpStatus());

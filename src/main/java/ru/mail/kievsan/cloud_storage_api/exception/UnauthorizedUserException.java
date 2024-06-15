@@ -5,23 +5,23 @@ import org.springframework.http.HttpStatus;
 public class UnauthorizedUserException extends AdviceException {
 
     public UnauthorizedUserException() {
-        super();
+        this("Unauthorized user exception");
     }
 
     public UnauthorizedUserException(String message) {
-        super(message);
+        this(message, HttpStatus.UNAUTHORIZED);
     }
 
     public UnauthorizedUserException(String message, HttpStatus httpStatus) {
-        super(message, httpStatus);
+        this(message, httpStatus, null);
     }
 
     public UnauthorizedUserException(String message, HttpStatus httpStatus, String controller) {
-        super(message, httpStatus, controller);
+        this(message, httpStatus, controller, null);
     }
 
     public UnauthorizedUserException(String message, HttpStatus httpStatus, String controller, String entryPoint) {
-        super(message, httpStatus, controller, entryPoint);
+        this(message, httpStatus, controller, entryPoint, null);
     }
 
     public UnauthorizedUserException(String message, HttpStatus httpStatus, String controller, String entryPoint, String source) {
