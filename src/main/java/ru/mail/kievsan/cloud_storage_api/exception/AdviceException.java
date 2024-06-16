@@ -3,7 +3,6 @@ package ru.mail.kievsan.cloud_storage_api.exception;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
-import ru.mail.kievsan.cloud_storage_api.util.ILogUtils;
 
 @Getter
 @Setter
@@ -55,7 +54,8 @@ public class AdviceException extends RuntimeException {
                 controller.isBlank() ? "" : controller.toUpperCase(),
                 entryPoint.isBlank() ? "" : entryPoint,
                 "err " + httpStatus.toString(),
-                ILogUtils.className.apply(getClass()),
+                //ILogUtils.className.apply(getClass()),
+                getClass().getSimpleName(),
                 source.isBlank() ? "" : source + ": ",
                 getMessage());
     }

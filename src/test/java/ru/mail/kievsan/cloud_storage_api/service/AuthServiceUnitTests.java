@@ -84,8 +84,8 @@ public class AuthServiceUnitTests {
     }
 
     @Test
-    public void authenticateHappyTest() {
-        System.out.println("  Authenticate user");
+    public void authenticateOkTest() {
+        System.out.println("  Successful user authentication");
         logCapture();
         var loginResponse = new AuthResponse(testJwt);
         mockAuth();
@@ -100,7 +100,7 @@ public class AuthServiceUnitTests {
 
     @Test
     public void authenticateErrNotFoundTest() {
-        System.out.printf("  Authenticate user error:  the user with email '%s' not found...\n", testUser.getEmail());
+        System.out.printf("  User authentication error:  the user with email '%s' not found...\n", testUser.getEmail());
         logCapture("  The user was not found...\n");
 
         Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenThrow(UsernameNotFoundException.class);
@@ -141,10 +141,10 @@ public class AuthServiceUnitTests {
     }
 
     public void mockAuth() {
-        var JwtPresentation = testJwt.substring(0, testJwt.length()/10)
+        var jwtPresentation = testJwt.substring(0, testJwt.length()/10)
                 + "..." + testJwt.substring(testJwt.length() - 2);
 
-        Mockito.when(userDetails.presentJWT(Mockito.anyString())).thenReturn(JwtPresentation);
+        Mockito.when(userDetails.presentJWT(Mockito.anyString())).thenReturn(jwtPresentation);
         Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser);
         Mockito.when(authManager.authenticate(Mockito.any())).thenReturn(auth);
         Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(testJwt);

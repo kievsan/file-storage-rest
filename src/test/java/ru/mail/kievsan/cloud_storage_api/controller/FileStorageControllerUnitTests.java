@@ -179,8 +179,7 @@ public class FileStorageControllerUnitTests {
     }
 
     static Stream<AdviceException> downloadFileErrTest() {
-        return Stream.of(
-                new InputDataException("Download file error: file not found. Downloading failed!"));
+        return Stream.of(new InputDataException("Download file error: file not found. Downloading failed!"));
     }
 
     @Test

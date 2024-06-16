@@ -62,13 +62,13 @@ public class AuthControllerUnitTests {
     AuthService authService;
 
     @MockBean
-    UserJPARepo userRepo;
-    @MockBean
     JwtProvider jwtProvider;
     @MockBean
-    UserProvider userProvider;
-    @MockBean
     JwtUserDetails userDetails;
+    @MockBean
+    UserJPARepo userRepo;
+    @MockBean
+    UserProvider userProvider;
     @MockBean
     JwtAuthenticationEntryPoint entryPoint;
     @MockBean
@@ -108,10 +108,11 @@ public class AuthControllerUnitTests {
     }
 
     @Test
-    public void loginTest() throws Exception {
+    public void loginOkTest() throws Exception {
         System.out.println("  Login user");
         var loginResponse = new AuthResponse(testJwt);
-        mockAuthorize();
+
+        mockAuth();
         Mockito.when(authService.authenticate(Mockito.any(AuthRequest.class))).thenReturn(loginResponse);
 
         var mockRequest = post(LOGIN_URI)
@@ -128,12 +129,13 @@ public class AuthControllerUnitTests {
         System.out.printf("  Login user error:  user with email %s not found...\n", testUser.getEmail());
         String errMsg = "The user not found, authentication is not possible!";
         log.info(errMsg);
+
         var ex = new UserNotFoundException(errMsg, null, null, null, "'auth service'");
         var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
 
         Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerUserNotFound(Mockito.any(ex.getClass()));
         Mockito.doThrow(ex).when(authService).authenticate(Mockito.any(AuthRequest.class));
-        mockAuthorize();
+        mockAuth();
 
         var mockRequest = post(LOGIN_URI)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -148,12 +150,13 @@ public class AuthControllerUnitTests {
         System.out.println("  Login user error");
         String errMsg = "The user was not authenticated, unknown runtime error!";
         log.info(errMsg);
+
         var ex = new NotAuthenticateException(errMsg, null, null, null, "'auth service'");
         var errResponse = new ResponseEntity<>(new ErrResponse(ex.getMessage(), 0), ex.getHttpStatus());
 
         Mockito.doReturn(errResponse).when(exceptionHandlerAdvice).handlerServerErr(Mockito.any(ex.getClass()));
         Mockito.doThrow(ex).when(authService).authenticate(Mockito.any(AuthRequest.class));
-        mockAuthorize();
+        mockAuth();
 
         var mockRequest = post(LOGIN_URI)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -164,10 +167,11 @@ public class AuthControllerUnitTests {
     }
 
     @Test
-    public void logoutTest() throws Exception {
+    public void logoutOkTest() throws Exception {
         System.out.println("  Logout user");
-        mockAuthorize();
+
         Mockito.when(authService.logout(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn("Success logout");
+        mockAuth();
 
         mockMvc.perform(mockRequest(post(LOGOUT_URI))).andExpect(status().isOk());
     }
@@ -193,16 +197,16 @@ public class AuthControllerUnitTests {
                 .compact();
     }
 
-    public void mockAuthorize() {
-        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(testJwt);
+    public void mockAuth() {
+        var authPresentation = "user  %s, %s".formatted(testUser.getUsername(), testUser.getAuthorities());
+        var jwtPresentation = testJwt.substring(0, testJwt.length()/10)
+                + "..." + testJwt.substring(testJwt.length() - 2);
 
-        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser);
+        Mockito.when(userDetails.presentAuthenticated()).thenReturn(authPresentation);
+        Mockito.when(userDetails.presentJWT(Mockito.anyString())).thenReturn(jwtPresentation);
         Mockito.when(userDetails.loadUserByJWT(Mockito.anyString())).thenReturn(testUser);
-        Mockito.when(userDetails.presentAuthenticated())
-                .thenReturn("user  %s, %s".formatted(testUser.getUsername(), testUser.getAuthorities()));
-        Mockito.when(userDetails.presentJWT(Mockito.anyString()))
-                .thenReturn(testJwt.substring(0, testJwt.length()/10)
-                        + "..." + testJwt.substring(testJwt.length() - 2));
+        Mockito.when(userDetails.loadUserByUsername(Mockito.anyString())).thenReturn(testUser);
+        Mockito.when(jwtProvider.generateToken(Mockito.any(UserDetails.class))).thenReturn(testJwt);
 
         log.info("testing login/logout user:  '{}', {}, {}", testUser.getNickname(), testUser.getEmail(), testUser.getRole());
     }

@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
-import ru.mail.kievsan.cloud_storage_api.util.ILogUtils;
 
 import java.io.IOException;
 
@@ -23,9 +22,10 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    static String className = ILogUtils.className_.apply(JwtAuthenticationFilter.class);
-
     private final JwtUserDetails details;
+
+    final String className = "'%s'".formatted(getClass().getSimpleName());
+    final String prefix = ">" + "-".repeat(15);
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String uri = request.getRequestURI(), method = request.getMethod();
         final String jwt = request.getHeader(ISecuritySettings.JWT_HEADER_NAME);
 
-        log.info("{}< {} :  {} >----- Start {},  token  '{}'", ILogUtils.prefix, uri, method, className, details.presentJWT(jwt));
+        log.info("{}< {} :  {} >----- Start {},  token  '{}'", prefix, uri, method, className, details.presentJWT(jwt));
 
         if (jwt == null || jwt.isBlank()) {
             String service = String.format("'%s' %s request", uri, method);
@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
-        log.info("{} Finish {} :  {},  token  '{}'", ILogUtils.prefix, className,
+        log.info("{} Finish {} :  {},  token  '{}'", prefix, className,
                 details.presentAuthenticated(), details.presentJWT(jwt));
     }
 
@@ -70,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void shutDown(RuntimeException ex) throws UnauthorizedUserException {
-        log.error("{} Failed to execute {}:\t{}", ILogUtils.prefix, className, ex.getMessage());
+        log.error("{} Failed to execute {}:\t{}", prefix, className, ex.getMessage());
         SecurityContextHolder.clearContext();
         throw ex;
     }
