@@ -89,7 +89,8 @@ public class AuthControllerUnitTests {
 
     @AfterAll
     public static void testSuiteComplete() {
-        System.out.printf("\n'Auth' controller tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
+        System.out.printf("\n'Auth' controller tests complete: %s ms.\n\n",
+                (System.currentTimeMillis() - suiteStartTime));
     }
 
     @BeforeEach

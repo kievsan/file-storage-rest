@@ -36,7 +36,8 @@ public class UserJPARepoTests {
 
     @AfterAll
     public static void testSuiteComplete() {
-        System.out.printf("User entity repository tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
+        System.out.printf("User entity repository tests complete: %s ms.\n\n",
+                (System.currentTimeMillis() - suiteStartTime));
     }
 
     @BeforeEach

@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import ru.mail.kievsan.cloud_storage_api.exception.UnauthorizedUserException;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUserDetails details;
+    //private final HandlerExceptionResolver handlerExceptionResolver;
 
     final String className = "'%s'".formatted(getClass().getSimpleName());
     final String prefix = ">" + "-".repeat(15);
@@ -51,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception ex) {
                 shutDown(new UnauthorizedUserException(ex.getMessage(), null, null, uri, className));
+                // handlerExceptionResolver.resolveException(request, response, null, ex);
                 //                response.sendError(401, ex.getMessage());
                 //                return;
             }

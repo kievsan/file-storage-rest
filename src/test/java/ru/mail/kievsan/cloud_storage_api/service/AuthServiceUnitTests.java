@@ -63,7 +63,8 @@ public class AuthServiceUnitTests {
 
     @AfterAll
     public static void testSuiteComplete() {
-        System.out.printf("\nAuth service unit tests complete: %s ms.\n\n", (System.currentTimeMillis() - suiteStartTime));
+        System.out.printf("\nAuth service unit tests complete: %s ms.\n\n",
+                (System.currentTimeMillis() - suiteStartTime));
     }
 
     @BeforeEach
@@ -72,7 +73,8 @@ public class AuthServiceUnitTests {
         testUser = newUser();
         testJwt = newJwt();
         loginRequest = new AuthRequest(testUser.getEmail(), testUser.getPassword());
-        auth = new UsernamePasswordAuthenticationToken(testUser.getEmail(), testUser.getPassword(), testUser.getAuthorities());
+        auth = new UsernamePasswordAuthenticationToken(
+                testUser.getEmail(), testUser.getPassword(), testUser.getAuthorities());
     }
 
     @AfterEach
