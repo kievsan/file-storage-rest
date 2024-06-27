@@ -27,13 +27,13 @@ public class UserServiceUnitTests {
     private static long suiteStartTime;
     private static User testUser;
 
-    @InjectMocks
-    private UserService service;
-
     @Mock
     UserJPARepo repo;
     @Mock
     PasswordEncoder encoder;
+
+    @InjectMocks
+    private UserService service;
 
 //    AutoCloseable openMocks;
 

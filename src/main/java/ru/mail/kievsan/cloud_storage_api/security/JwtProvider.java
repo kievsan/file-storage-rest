@@ -133,5 +133,4 @@ public class JwtProvider {
     public JwtParser getJwtParser() {
         return Jwts.parser().verifyWith((SecretKey) getSigningKey(secretKey)).build(); // .setSigningKey(getSigningKey()).build()
     }
-
 }

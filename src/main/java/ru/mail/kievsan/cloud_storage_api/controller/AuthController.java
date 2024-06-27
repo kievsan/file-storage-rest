@@ -37,7 +37,9 @@ public class AuthController {
     public ResponseEntity<String> logout(@RequestHeader("auth-token") String authToken,
                                          HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(service.logout(request, response,
-                provider.trueUser(authToken,"Start Auth controller " + request.getRequestURI(), "Logout error", log::error)));
+                provider.trueUser(authToken,
+                        "Start Auth controller " + request.getRequestURI(),
+                        "Logout error", log::error)));
     }
 
 }

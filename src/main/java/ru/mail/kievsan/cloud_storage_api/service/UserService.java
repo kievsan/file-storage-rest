@@ -38,12 +38,14 @@ public class UserService {
                 .role(USER_IS_SUPER_ADMIN.test(owner) ? req.getRole() : Role.USER)
                 .enabled(true)
                 .build();
-        if (userRepo.existsByEmail(newUser.getUsername())) {
-            String errMsg = String.format("The email %s is already in use, registration is not possible!", req.getEmail());
+        if (userRepo.existsByEmail(newUser.getUsername()) ||
+                userRepo.findByNickname(newUser.getNickname()).isPresent()) {
+            String errMsg = String.format(
+                    "The email %s or nickname %s is already in use, registration is not possible!",
+                    req.getEmail(), req.getNickname());
             logError(newUser, errMsg);
             throw new UserRegistrationException(errMsg, null, null, null, "'register service'");
         }
-//        signup(newUser);
         newUser.setId(signup(newUser));
         return new SignUpResponse(newUser);
     }

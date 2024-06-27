@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateRequest { // Пользовательский запрос на изменение user
+public class UpdateRequest { // запрос на изменение user
 
     static final int max = 100;
     static final int min = 6;
